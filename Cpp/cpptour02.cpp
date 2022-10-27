@@ -1,8 +1,8 @@
 #include <iostream> // ol' reliable
-#include<string>
-#include<vector>
-#include<list>
-#include<memory>
+#include <string>
+#include <vector>
+#include <list>
+#include <memory>
 #include <cmath>
 using namespace std;
 
@@ -43,7 +43,7 @@ private:
 enum class Color { red, blue, green };
 enum class Traffic_light { green, yellow, red };
 
-Color x1 = red;                 // error: which red?
+Color x1 = red;                 // error: which red? # me tira un error medio equivocado mmmm
 Color y2 = Traffic_light::red;  // error: that red is not a Color
 Color z3 = Color::red;          // OK
 auto x4 = Color::red;           // OK: Color::red is a Color
