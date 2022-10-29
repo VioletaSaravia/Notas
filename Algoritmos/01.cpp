@@ -1,6 +1,8 @@
 #include <iostream> // import std no me anda :/
 #include <vector>
 
+// usar https://bartoszmilewski.com/2009/10/21/what-does-haskell-have-to-do-with-c/
+// para implementar funcion con distintos templates?¿
 std::vector<int> MergeSort(const std::vector<int> &l) // TODO: sort in same object
 {
 	std::vector<int> output; // (size(l)); TODO: fixed size output
