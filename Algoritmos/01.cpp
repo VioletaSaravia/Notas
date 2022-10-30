@@ -6,12 +6,12 @@
 std::vector<int> MergeSort(const std::vector<int> &l) // TODO: sort in same object
 {
 	std::vector<int> output; // (size(l)); TODO: fixed size output
-	auto in_size = l.size();
-	if (in_size > 2)
+	auto l_size = size(l);
+	if (l_size > 2)
 	{
 		std::vector<int> first_half;
 		std::vector<int> second_half;
-		std::vector<int>::const_iterator halve = l.begin() + int(in_size / 2);
+		std::vector<int>::const_iterator halve = l.begin() + int(l_size / 2);
 		copy(l.begin(), halve, back_inserter(first_half));
 		copy(halve, l.end(), back_inserter(second_half));
 
@@ -44,7 +44,7 @@ std::vector<int> MergeSort(const std::vector<int> &l) // TODO: sort in same obje
 		}
 		return output;
 	}
-	else if ((in_size == 2) && (l[0] > l[1]))
+	else if ((l_size == 2) && (l[0] > l[1]))
 	{
 		return std::vector<int>{l[1], l[0]};
 	}
