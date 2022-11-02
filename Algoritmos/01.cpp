@@ -62,6 +62,7 @@ int CountInversions(const std::vector<int> &l)
 		std::vector<int> left_half;
 		std::vector<int> right_half;
 		auto halve = l.begin() + (l_size / 2);
+		// IDEA: Pasar iteradores a la recursión para que no haya que copiar
 		copy(l.begin(), halve, back_inserter(left_half));
 		copy(halve, l.end(), back_inserter(right_half));
 
