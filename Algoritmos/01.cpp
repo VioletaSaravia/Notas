@@ -5,8 +5,6 @@
 #include <sstream>
 #include <string>
 
-// usar https://bartoszmilewski.com/2009/10/21/what-does-haskell-have-to-do-with-c/
-// para implementar funcion con distintos templates?¿
 std::vector<int> MergeSort(const std::vector<int> &l) // TODO: sort in same object
 {
 	std::vector<int> output; // (size(l)); TODO: fixed size output
@@ -27,6 +25,16 @@ std::vector<int> MergeSort(const std::vector<int> &l) // TODO: sort in same obje
 		auto second_i = second_half.begin();
 		for (auto &i : l)
 		{
+			if (first_i == first_half.end())
+			{
+				copy(second_i, second_half.end(), back_inserter(output));
+				break;
+			}
+			if (second_i == second_half.end())
+			{
+				copy(first_i, first_half.end(), back_inserter(output));
+				break;
+			}
 			if (*first_i < *second_i)
 			{
 				output.push_back(*first_i);
@@ -62,7 +70,7 @@ int CountInversions(const std::vector<int> &l)
 		std::vector<int> left_half;
 		std::vector<int> right_half;
 		auto halve = l.begin() + (l_size / 2);
-		// IDEA: Pasar iteradores a la recursión para que no haya que copiar
+		// Pasar iteradores a la recursión para que no haya que copiar
 		copy(l.begin(), halve, back_inserter(left_half));
 		copy(halve, l.end(), back_inserter(right_half));
 
@@ -76,27 +84,21 @@ int CountInversions(const std::vector<int> &l)
 		auto right_i = right_half.begin();
 		while (left_i != left_half.end())
 		{
-			// if (right_i == right_half.end())
-			// {
-			// 	++left_i
-			// }
 			if (*left_i <= *right_i)
 			{
 				++left_i;
-				right_i = right_half.begin();
 			}
 			else if (*right_i < *left_i)
 			{
-				++split_invs;
-				// split_invs += right_half.end() - right_i;
+				split_invs += left_half.end() - left_i;
 
-				if (right_i == right_half.end() - 1 && left_i == left_half.end() - 1)
-				{
-					break;
-				}
-				if (right_i != right_half.end() - 1)
+				if (left_i != left_half.end() - 1)
 				{
 					++right_i;
+				}
+				else
+				{
+					++left_i;
 				}
 			}
 			// else if (*right_i == *left_i) // no hay = en el ejercicio
