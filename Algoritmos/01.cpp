@@ -119,26 +119,27 @@ std::vector<point> ClosestPair(const std::vector<point> &p)
 	return closest;
 }
 
+// https://gist.github.com/christophewang/ad056af4b3ab0ceebacf
 void QuickSort(
-	std::vector<int> A,
+	std::vector<int> *A,
 	std::vector<int>::iterator l,
 	std::vector<int>::iterator r)
 {
-	auto n = A.size();
-	if (n == 1)
+	if ((*A).size() == 1)
 	{
 		return;
 	}
 
-	auto p = l + (rand() % std::distance(l, r));  // O(n log n) creo ¿?
-	//auto p = l; // O(n^2)
+	//auto p = l + (rand() % std::distance(l, r));  // O(n log n)
+	auto p = l; // O(n^2)
 
 	auto i = p + 1;
-	for (auto j = p + 1; j != r; ++j)
+	for (auto j = p + 1; j < r; ++j)
 	{
 		if (*j < *p)
 		{
-			*i, *j = *j, *i;
+			//*i, *j = *j, *i;
+			std::swap(*i, *j);
 			++i;
 		}
 	}
@@ -148,42 +149,8 @@ void QuickSort(
 
 int main()
 {
-	std::vector<std::vector<int>> matrixA = {{1, 6, 4, 2},
-											 {7, 6, 4, 2},
-											 {1, 2, 3, 4},
-											 {9, 6, 8, 3}};
-	std::vector<std::vector<int>> matrixB = {{4, 2, 1, 2},
-											 {3, 2, 8, 2},
-											 {1, 3, 9, 3},
-											 {1, 6, 4, 8}};
-
-	// auto no es vector<int> ???
-	std::vector<long long> example_list = {5, 4, 1, 8, 7, 2, 6, 3}; 
-	auto result = MergeSort(example_list);
-	auto result2 = CountInversions(example_list);
-	auto list2 = {2, 1};
-	auto test1 = CountInversions({2, 1, 3});
-	// auto result3 = matrixA * matrixB;
-
-	std::vector<long long> example_intarray;
-	std::ifstream infile("IntArray.txt");
-	std::string line;
-	while (std::getline(infile, line))
-	{
-		std::istringstream iss(line);
-		long long a;
-		if (!(iss >> a))
-		{
-			break;
-		}
-
-		example_intarray.push_back(a);
-	}
-
-	long result4 = CountInversions(example_intarray);
-
 	std::vector<int> sortEx = {5, 4, 1, 8, 7, 2, 6, 3};
-	QuickSort(sortEx, sortEx.begin(), sortEx.end());
+	QuickSort(&sortEx, sortEx.begin(), sortEx.end());
 
 	return 0;
 }

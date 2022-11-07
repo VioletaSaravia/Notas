@@ -46,6 +46,9 @@
 		"typeinfo": "cpp",
 		"compare": "cpp",
 		"concepts": "cpp",
-		"numbers": "cpp"
+		"numbers": "cpp",
+		"list": "cpp",
+		"ranges": "cpp",
+		"span": "cpp"
 	}
 }
