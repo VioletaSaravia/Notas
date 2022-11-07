@@ -121,7 +121,7 @@ std::vector<point> ClosestPair(const std::vector<point> &p)
 
 // https://gist.github.com/christophewang/ad056af4b3ab0ceebacf
 void QuickSort(
-	std::vector<int> *A,
+	std::vector<int> *A, // no es lo que hace copy()
 	std::vector<int>::iterator l,
 	std::vector<int>::iterator r)
 {
