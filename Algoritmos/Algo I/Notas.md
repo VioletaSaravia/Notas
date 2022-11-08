@@ -253,6 +253,54 @@ Espacio: $\Theta (m+n)$ (Es decir, $\Theta(max\{m,n\})$)
    - Elegir una arista $(u,v)$ restante al azar, de manera uniforme
    - Combinar ("Contraer") $u$ y $v$ en una sola arista (puede crear paralelos)
    - Remover bucles (self-loops)
-2) Devolve el corte *representado* por los dos vertices finales.
+2) Devolver el corte *representado* por los dos vertices finales.
 
 Este algoritmo no siempre encuentra el MIN-CUT. Cuántas chances hay de que lo encuentre?
+
+Dado un grafo $G=(V,E)$ con $n$ vertices, $m$ aristas. Sea k = Número de aristas cruzando el corte mínimo $(A,B)$ (aristas $F$)
+
+1) Si una arista de F se contrae en algún momento, el output del algoritmo no es $(A,B)$. 
+2) Si sólo se contraen aristas dentro de $A$ o $B$, ese output es necesariamente el MIN-CUT $(A,B)$.
+3) $\therefore$ $Pr[(A,B)]=Pr[\text{arista de F no se contraiga}]$
+
+Sea $S_i$ acontecimiento de que una arista de $F$ se contraiga en la iteración $i$.
+
+Meta: Computar $Pr[\neg S_1,\land \neg S_2,...,\land \neg S_{n-2}]$
+
+* $Pr[S_1]=k/m$
+
+Observación: El grado (# de ejes incidentes) de cada vértices es al menos k.
+
+1) $\sum grados(v)=2m$, por lo tanto $m\geq (kn )/ 2$
+2) Como $Pr[S_1]=k/m$, $Pr[S_1]\leq 2/n$
+
+Segunda iteración: 
+
+* $Pr[\neg S_1\land \neg S_2]=Pr[\neg S_2 | \neg S_1]\cdot Pr[\neg S_1]$
+* $Pr[\neg S_1\land \neg S_2]=(1-k/\text{aristas restantes}) \cdot(1-2/n)$
+
+No sabemos cuántas aristas restantes hay, pero podemos describirlo en términos de nodos $n-1$ de grados $\geq k$.
+* $\therefore \text{aristas restantes} \geq 1/2k(n-1)$
+* $\therefore Pr[\neg S_2 | \neg S_1]\geq 1-2/(n-1)$
+
+Finalmente:
+
+$Pr[\neg S_1,\land \neg S_2,...,\land \neg S_{n-2}]\geq (1-\frac{2}{n})(1-\frac{2}{n-1})...(1-\frac{2}{n-(n-4)})(1-\frac{2}{n-(n-3)})=\frac{2}{n(n-1)}\geq 1/n^2$
+
+Cómo implementar: Correr el algoritmo básico una gran cantidad de veces $N$, llevando registro del corte más bajo hasta el momento. Cuántas vamos a necesitar?
+
+Sea $T_i$ el acontecimiento que encuentra a $(A,B)$ en el intento $i$ésimo. Los $T_i$ son independientes por definición. Entonces: $Pr[\text{fallen todos los N intentos}]=Pr[\neg T_1, \land \neg T_2...\land \neg T_N] = \prod_{i=1}^N Pr[\neg T_i]\leq (1-\frac{1}{n^2})^N$
+
+Dato: $\forall x\in \R,1+x\leq e^x$
+
+Si tomamos $N=n^2$, $Pr[\text{todos fallen}]\leq (e^{-1/n^2})^{n^2}=\frac{1}{e}$. 
+
+Para $N = n^2\ln n$, $Pr[\text{todos fallen}]\leq \frac{1}{e}^{\ln n}=1/n$
+
+### Tiempo de Ejecución
+
+Polinómico en $n$ y $m$ pero lento $(\Omega(n^2m))$. Pero: Hay mejores implementaciones que llegan más o menos a $O(n^2)$.
+
+### Número de cortes mínimos
+
+Un grafo puede tener múltiples cortes mínimos (e.g. un árbol con $n$ vértices tiene $n-1$ cortes mínimos). El número más grande de cortes mínimos que puede tener un grafo de $n$ vértices es ${n \choose 2} = \frac{n(n-1)}{2}$

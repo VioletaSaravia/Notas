@@ -4,8 +4,10 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <map>
 
-std::vector<long long> MergeSort(const std::vector<long long> &l) // TODO: sort in same object
+// Semana 1
+std::vector<long long> MergeSort(const std::vector<long long> &l) // TODO: void MergeSort()
 {
 	std::vector<long long> output; // (size(l)); TODO: fixed size output
 	auto l_size = size(l);
@@ -62,6 +64,7 @@ std::vector<long long> MergeSort(const std::vector<long long> &l) // TODO: sort 
 	return l;
 }
 
+// Semana 2
 long long CountInversions(const std::vector<long long> &l)
 {
 	auto l_size = size(l);
@@ -104,6 +107,7 @@ long long CountInversions(const std::vector<long long> &l)
 	return 0;
 }
 
+// Semana 3
 struct point
 {
 	int x;
@@ -160,14 +164,94 @@ void QuickSort(
 		QuickSort(A, i, r);
 }
 
+// Semana 4
+int RSelect() { return 0; }
+
+int DSelect() { return 0; }
+
+/*Your task is to code up and run the randomized contraction algorithm for
+the min cut problem and use it on the above graph to compute the min cut.
+(HINT: Note that you'll have to figure out an implementation of edge
+contractions.  Initially, you might want to do this naively, creating a new
+graph from the old every time there's an edge contraction.  But you should
+also think about more efficient implementations.) (WARNING: As per the video
+lectures, please make sure to run the algorithm many times with different
+random seeds, and remember the smallest cut that you ever find.)*/
+
+typedef std::map<std::string, std::string[]> node;
+
+typedef std::vector<node> graph;
+
+graph KargerContraction(const graph &G)
+{
+	auto output = G;
+	while (size(output) > 2)
+	{
+		auto u = output[rand() % size(output)];
+		auto v = u[rand() % size(u)];
+		for (auto edge : v)
+		{
+			if (edge != u)
+			{
+				u.push_back(edge);
+			}
+		}
+		output.erase(v);
+	}
+	return output;
+}
+
+graph MinCut(const graph &G)
+{
+	int i;
+	int N = std::pow(size(G), 2) * std::log(size(G));
+
+	graph bestAttempt;
+	int bestCorte;
+	graph lastAttempt;
+	int lastCorte;
+	while (i < N)
+	{
+		lastAttempt = KargerContraction(G);
+		if (size(lastAttempt[0]) < bestCorte)
+		{
+			bestCorte = size(lastAttempt[0]);
+			bestAttempt = lastAttempt;
+		};
+		++i;
+	}
+	return bestAttempt;
+}
+
+graph txtToGraph(std::string filepath)
+{
+	std::ifstream infile(filepath);
+	graph output;
+
+	std::string line;
+	while (std::getline(infile, line))
+	{
+		std::istringstream iss(line);
+		std::string a;
+		std::string b;
+		if (!(iss >> a >> b))
+		{
+			break;
+		}
+		node next[a] = [b]; // -.-
+		output.push_back(next);
+		printf("%s", line.c_str());
+	}
+
+	return output;
+}
+
 int main()
 {
 	std::vector<int> sortEx = {5, 4, 1, 8, 7, 2, 6, 3, 9};
-	auto test1 = rand() % 3;
-	auto test2 = std::distance(sortEx.begin(), sortEx.end());
-	auto test3 = sortEx.begin() + rand() % test2;
-
 	QuickSort(&sortEx, sortEx.begin(), sortEx.end());
+
+	auto test01 = MinCut(txtToGraph("kargerMinCut.txt"));
 
 	return 0;
 }
