@@ -119,37 +119,54 @@ std::vector<point> ClosestPair(const std::vector<point> &p)
 	return closest;
 }
 
-// https://gist.github.com/christophewang/ad056af4b3ab0ceebacf
 void QuickSort(
 	std::vector<int> *A, // no es lo que hace copy()
 	std::vector<int>::iterator l,
 	std::vector<int>::iterator r)
 {
-	if ((*A).size() == 1)
+	auto i = l;
+	// auto j = (r != (*A).end()) ? r : r - 1; // segfault??
+	std::vector<int>::iterator j;
+	if (r != (*A).end())
 	{
-		return;
+		j = r;
+	}
+	else
+	{
+		r = r - 1;
 	}
 
-	//auto p = l + (rand() % std::distance(l, r));  // O(n log n)
-	auto p = l; // O(n^2)
+	auto range = std::distance(l, r);
+	auto p = (range > 1) ? l + (rand() % (range - 1)) : l; // O(n log n)
+	// auto p = l; // O(n^2)
+	// auto p = std::min((std::max(l, l + range / 2)), r); // middle-of-three
 
-	auto i = p + 1;
-	for (auto j = p + 1; j < r; ++j)
+	while (i < j)
 	{
-		if (*j < *p)
+		while (*i < *p)
+			++i;
+		while (*j > *p)
+			--j;
+		if (i <= j)
 		{
-			//*i, *j = *j, *i;
 			std::swap(*i, *j);
 			++i;
+			--j;
 		}
 	}
-	QuickSort(A, l, p);
-	QuickSort(A, p, r);
+	if (j > l)
+		QuickSort(A, l, j);
+	if (i < r)
+		QuickSort(A, i, r);
 }
 
 int main()
 {
-	std::vector<int> sortEx = {5, 4, 1, 8, 7, 2, 6, 3};
+	std::vector<int> sortEx = {5, 4, 1, 8, 7, 2, 6, 3, 9};
+	auto test1 = rand() % 3;
+	auto test2 = std::distance(sortEx.begin(), sortEx.end());
+	auto test3 = sortEx.begin() + rand() % test2;
+
 	QuickSort(&sortEx, sortEx.begin(), sortEx.end());
 
 	return 0;
