@@ -178,25 +178,57 @@ also think about more efficient implementations.) (WARNING: As per the video
 lectures, please make sure to run the algorithm many times with different
 random seeds, and remember the smallest cut that you ever find.)*/
 
-typedef std::map<std::string, std::string[]> node;
+// usar un map hace complicado el random seed - paso a struct
+// typedef std::map<std::string, std::vector<std::string>> node;
 
+// con un nodo a strings no puedo apuntar a las aristas de v
+// struct node
+// {
+// 	std::string label;
+// 	std::vector<std::string> adjacent;
+// };
+struct node
+{
+	std::string label;
+	std::vector<node *> adjacent;
+};
+
+// typedef std::string node;
+// typedef std::vector<node> adjacent;
 typedef std::vector<node> graph;
 
-graph KargerContraction(const graph &G)
+graph Karger(const graph &G)
 {
 	auto output = G;
-	while (size(output) > 2)
+	for (auto size_out = output.size(); size_out > 2; size_out = output.size())
 	{
-		auto u = output[rand() % size(output)];
-		auto v = u[rand() % size(u)];
-		for (auto edge : v)
+		auto u = output.begin() + (rand() % size_out);
+		auto v = u->adjacent.begin() + (rand() % size(u->adjacent));
+		for (auto w : (*v)->adjacent)
 		{
-			if (edge != u)
+			if (w->label != u->label)
 			{
-				u.push_back(edge);
+				w->adjacent.push_back(w);
+				for (auto v_in_w = w->adjacent.begin();
+					 v_in_w != w->adjacent.end();
+					 ++v_in_w)
+				{
+					if (*v_in_w == *v)
+					{
+						w->adjacent.erase(v_in_w);
+						w->adjacent.push_back(&(*u));
+					}
+				}
 			}
 		}
-		output.erase(v);
+		//(*v)->adjacent.empty(); // NO? O SÍ
+
+		// O(n)
+		for (auto i = output.begin();i != output.end(); ++i){
+			if (i->label == (*v)->label){
+				output.erase(i);
+			}
+		}
 	}
 	return output;
 }
@@ -212,10 +244,11 @@ graph MinCut(const graph &G)
 	int lastCorte;
 	while (i < N)
 	{
-		lastAttempt = KargerContraction(G);
-		if (size(lastAttempt[0]) < bestCorte)
+		lastAttempt = Karger(G);
+		lastCorte = size(lastAttempt[0].adjacent);
+		if (lastCorte < bestCorte)
 		{
-			bestCorte = size(lastAttempt[0]);
+			bestCorte = lastCorte;
 			bestAttempt = lastAttempt;
 		};
 		++i;
@@ -223,35 +256,14 @@ graph MinCut(const graph &G)
 	return bestAttempt;
 }
 
-graph txtToGraph(std::string filepath)
-{
-	std::ifstream infile(filepath);
-	graph output;
-
-	std::string line;
-	while (std::getline(infile, line))
-	{
-		std::istringstream iss(line);
-		std::string a;
-		std::string b;
-		if (!(iss >> a >> b))
-		{
-			break;
-		}
-		node next[a] = [b]; // -.-
-		output.push_back(next);
-		printf("%s", line.c_str());
-	}
-
-	return output;
-}
-
 int main()
 {
-	std::vector<int> sortEx = {5, 4, 1, 8, 7, 2, 6, 3, 9};
-	QuickSort(&sortEx, sortEx.begin(), sortEx.end());
+	// std::vector<int> sortEx = {5, 4, 1, 8, 7, 2, 6, 3, 9};
+	// QuickSort(&sortEx, sortEx.begin(), sortEx.end());
 
-	auto test01 = MinCut(txtToGraph("kargerMinCut.txt"));
+
+	graph test01;
+	auto cut01 = MinCut(test01);
 
 	return 0;
 }
