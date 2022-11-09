@@ -129,7 +129,6 @@ void QuickSort(
 	std::vector<int>::iterator r)
 {
 	auto i = l;
-	// auto j = (r != (*A).end()) ? r : r - 1; // segfault??
 	std::vector<int>::iterator j;
 	if (r != (*A).end())
 	{
@@ -169,32 +168,12 @@ int RSelect() { return 0; }
 
 int DSelect() { return 0; }
 
-/*Your task is to code up and run the randomized contraction algorithm for
-the min cut problem and use it on the above graph to compute the min cut.
-(HINT: Note that you'll have to figure out an implementation of edge
-contractions.  Initially, you might want to do this naively, creating a new
-graph from the old every time there's an edge contraction.  But you should
-also think about more efficient implementations.) (WARNING: As per the video
-lectures, please make sure to run the algorithm many times with different
-random seeds, and remember the smallest cut that you ever find.)*/
-
-// usar un map hace complicado el random seed - paso a struct
-// typedef std::map<std::string, std::vector<std::string>> node;
-
-// con un nodo a strings no puedo apuntar a las aristas de v
-// struct node
-// {
-// 	std::string label;
-// 	std::vector<std::string> adjacent;
-// };
 struct node
 {
 	std::string label;
 	std::vector<node *> adjacent;
 };
 
-// typedef std::string node;
-// typedef std::vector<node> adjacent;
 typedef std::vector<node> graph;
 
 graph Karger(const graph &G)
