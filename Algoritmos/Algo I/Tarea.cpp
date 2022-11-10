@@ -5,17 +5,44 @@
 #include <sstream>
 #include <string>
 #include <map>
+#include <deque>
 
 // Semana 1
-std::vector<long long> MergeSort(const std::vector<long long> &l) // TODO: void MergeSort()
+
+struct LongNatural {
+	std::string value;
+
+	LongNatural operator+(LongNatural const &rhs) const{
+		auto rdigit = rhs.value.end();
+		auto ldigit = this->value.end();
+		int leftover = 0;
+		int tempOut;
+		LongNatural output;
+
+		while (rdigit > rhs.value.begin() || leftover != 0){
+			tempOut = std::atoi(&*ldigit) + std::atoi(&*rdigit) + leftover;
+			// tempOut = asd;
+			leftover = tempOut % 10;
+			output.value.insert(output.value.begin(),tempOut);
+
+			--rdigit;
+			--ldigit;
+		}
+
+		return output;
+	}
+};
+
+template <class T>
+std::vector<T> MergeSort(const std::vector<T> &l) // TODO: void MergeSort()
 {
-	std::vector<long long> output; // (size(l)); TODO: fixed size output
+	std::vector<T> output; // (size(l)); TODO: fixed size output
 	auto l_size = size(l);
 	if (l_size > 2)
 	{
-		std::vector<long long> first_half;
-		std::vector<long long> second_half;
-		std::vector<long long>::const_iterator halve = l.begin() + int(l_size / 2);
+		std::vector<T> first_half;
+		std::vector<T> second_half;
+		std::vector<T>::const_iterator halve = l.begin() + int(l_size / 2);
 		copy(l.begin(), halve, back_inserter(first_half));
 		copy(halve, l.end(), back_inserter(second_half));
 
@@ -59,19 +86,20 @@ std::vector<long long> MergeSort(const std::vector<long long> &l) // TODO: void 
 	}
 	else if ((l_size == 2) && (l[0] > l[1]))
 	{
-		return std::vector<long long>{l[1], l[0]};
+		return std::vector<T>{l[1], l[0]};
 	}
 	return l;
 }
 
 // Semana 2
-long long CountInversions(const std::vector<long long> &l)
+template <class T>
+int CountInversions(const std::vector<T> &l)
 {
 	auto l_size = size(l);
 	if (l_size > 2)
 	{
-		std::vector<long long> left_half;
-		std::vector<long long> right_half;
+		std::vector<T> left_half;
+		std::vector<T> right_half;
 		auto halve = l.begin() + (l_size / 2);
 		// Pasar iteradores a la recursión para que no haya que copiar
 		copy(l.begin(), halve, back_inserter(left_half));
@@ -123,13 +151,14 @@ std::vector<point> ClosestPair(const std::vector<point> &p)
 	return closest;
 }
 
+template <class T>
 void QuickSort(
-	std::vector<int> *A, // no es lo que hace copy()
-	std::vector<int>::iterator l,
-	std::vector<int>::iterator r)
+	std::vector<T> *A, // no es lo que hace copy()
+	typename std::vector<T>::iterator l,
+	typename std::vector<T>::iterator r)
 {
 	auto i = l;
-	std::vector<int>::iterator j;
+	std::vector<T>::iterator j;
 	if (r != (*A).end())
 	{
 		j = r;
@@ -168,10 +197,36 @@ int RSelect() { return 0; }
 
 int DSelect() { return 0; }
 
+struct node
+{
+	std::string label;
+	bool explorado;
 
-typedef std::string node;
+	//void * operator new(size_t n, std::string l){}
+
+	bool operator==(node const &rhs) const
+	{
+		return this->label == rhs.label;
+	}
+
+	bool operator!=(node const &rhs) const
+	{
+		return this->label != rhs.label;
+	}
+
+	std::ostream &operator<<(std::ostream &os)
+	{
+		return os << this->label;
+	}
+
+	std::istream &operator>>(std::istream &is)
+	{
+		return is >> this->label;
+	}
+};
+// typedef std::string node;
 typedef std::vector<node> adjacent;
-typedef std::map<node,adjacent> graph;
+typedef std::map<node, adjacent> graph;
 
 graph RContraction(const graph &G)
 {
@@ -180,7 +235,7 @@ graph RContraction(const graph &G)
 	{
 		auto u = std::next(std::begin(output), rand() % output.size());
 		auto v = *(u->second.begin() + (rand() % size(u->second)));
-		for (auto w : output[v])
+		for (node w : output[v])
 		{
 			if (w != u->first)
 			{
@@ -198,13 +253,17 @@ graph RContraction(const graph &G)
 			}
 		}
 
-		for (auto i = u->second.begin();i != u->second.end(); ++i){
-			if (*i == v){
+		for (auto i = u->second.begin(); i != u->second.end(); ++i)
+		{
+			if (*i == v)
+			{
 				u->second.erase(i);
 			}
 		}
-		for (auto i = output.begin();i != output.end(); ++i){
-			if (i->first == v){
+		for (auto i = output.begin(); i != output.end(); ++i)
+		{
+			if (i->first == v)
+			{
 				output.erase(i);
 				break;
 			}
@@ -234,18 +293,47 @@ graph MinCut(const graph &G)
 	return bestAttempt;
 }
 
+struct node2
+{
+	std::string label;
+	bool explorado;
+};
+// typedef std::string node;
+typedef std::vector<node2 *> adjacent2;
+typedef std::map<node2, adjacent2> graph2;
+// Semana 5
+void BusquedaAnchura(graph2 &G, node2 *s)
+{
+	// std::vector<std::string> exp;
+	std::deque<node2 *> Q = {s};
+
+	// O(n_s)
+	while (!Q.empty())
+	{
+		auto v = Q.front();
+		Q.pop_front();
+		// O(m_s)
+		for (auto w : G[*v])
+		{
+			if (!(w->explorado))
+			{
+				// exp.push_back(w->label);
+				// O(1)
+				w->explorado = true;
+				Q.push_front(w);
+			}
+		};
+	}
+}
+
+void BusquedaProfundidad(){};
+
 int main()
 {
-	// std::vector<int> sortEx = {5, 4, 1, 8, 7, 2, 6, 3, 9};
-	// QuickSort(&sortEx, sortEx.begin(), sortEx.end());
+	std::vector<int> sortEx = {5, 4, 1, 8, 7, 2, 6, 3, 9};
+	QuickSort<int>(&sortEx, sortEx.begin(), sortEx.end());
 
-
-	graph test01 = {
-		{"1", {"2", "3"}},
-		{"2", {"1", "3", "4"}},
-		{"4", {"2", "3"}},
-		{"3", {"1", "2", "4"}}
-	};
+	graph test01;
 	auto cut01 = MinCut(test01);
 
 	return 0;
