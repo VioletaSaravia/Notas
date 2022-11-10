@@ -168,44 +168,45 @@ int RSelect() { return 0; }
 
 int DSelect() { return 0; }
 
-struct node
-{
-	std::string label;
-	std::vector<node *> adjacent;
-};
 
-typedef std::vector<node> graph;
+typedef std::string node;
+typedef std::vector<node> adjacent;
+typedef std::map<node,adjacent> graph;
 
-graph Karger(const graph &G)
+graph RContraction(const graph &G)
 {
 	auto output = G;
 	for (auto size_out = output.size(); size_out > 2; size_out = output.size())
 	{
-		auto u = output.begin() + (rand() % size_out);
-		auto v = u->adjacent.begin() + (rand() % size(u->adjacent));
-		for (auto w : (*v)->adjacent)
+		auto u = std::next(std::begin(output), rand() % output.size());
+		auto v = *(u->second.begin() + (rand() % size(u->second)));
+		for (auto w : output[v])
 		{
-			if (w->label != u->label)
+			if (w != u->first)
 			{
-				w->adjacent.push_back(w);
-				for (auto v_in_w = w->adjacent.begin();
-					 v_in_w != w->adjacent.end();
-					 ++v_in_w)
+				u->second.push_back(w);
+				for (auto ws_replace = output[w].begin();
+					 ws_replace != output[w].end();
+					 ++ws_replace)
 				{
-					if (*v_in_w == *v)
+					if (*ws_replace == v)
 					{
-						w->adjacent.erase(v_in_w);
-						w->adjacent.push_back(&(*u));
+						output[w].erase(ws_replace);
+						output[w].push_back(u->first);
 					}
 				}
 			}
 		}
-		//(*v)->adjacent.empty(); // NO? O SÍ
 
-		// O(n)
+		for (auto i = u->second.begin();i != u->second.end(); ++i){
+			if (*i == v){
+				u->second.erase(i);
+			}
+		}
 		for (auto i = output.begin();i != output.end(); ++i){
-			if (i->label == (*v)->label){
+			if (i->first == v){
 				output.erase(i);
+				break;
 			}
 		}
 	}
@@ -214,23 +215,21 @@ graph Karger(const graph &G)
 
 graph MinCut(const graph &G)
 {
-	int i;
 	int N = std::pow(size(G), 2) * std::log(size(G));
 
 	graph bestAttempt;
-	int bestCorte;
+	int bestCut = INT32_MAX;
 	graph lastAttempt;
-	int lastCorte;
-	while (i < N)
+	int lastCut;
+	for (auto i = 0; i < N; ++i)
 	{
-		lastAttempt = Karger(G);
-		lastCorte = size(lastAttempt[0].adjacent);
-		if (lastCorte < bestCorte)
+		lastAttempt = RContraction(G);
+		lastCut = size(lastAttempt.begin()->second);
+		if (lastCut < bestCut)
 		{
-			bestCorte = lastCorte;
+			bestCut = lastCut;
 			bestAttempt = lastAttempt;
 		};
-		++i;
 	}
 	return bestAttempt;
 }
@@ -241,7 +240,12 @@ int main()
 	// QuickSort(&sortEx, sortEx.begin(), sortEx.end());
 
 
-	graph test01;
+	graph test01 = {
+		{"1", {"2", "3"}},
+		{"2", {"1", "3", "4"}},
+		{"4", {"2", "3"}},
+		{"3", {"1", "2", "4"}}
+	};
 	auto cut01 = MinCut(test01);
 
 	return 0;
