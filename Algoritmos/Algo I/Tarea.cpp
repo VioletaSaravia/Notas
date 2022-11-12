@@ -6,27 +6,89 @@
 #include <string>
 #include <map>
 #include <deque>
+#include <stack>
 
-// Semana 1
+// Semana 1 ------------------------------------------------------------------
 
-struct LongNatural {
+//typedef std::string LongNatural;
+struct LongNatural
+{
 	std::string value;
 
-	LongNatural operator+(LongNatural const &rhs) const{
+	LongNatural operator+(LongNatural const &rhs) const
+	{
 		auto rdigit = rhs.value.end();
 		auto ldigit = this->value.end();
 		int leftover = 0;
 		int tempOut;
 		LongNatural output;
 
-		while (rdigit > rhs.value.begin() || leftover != 0){
+		while (rdigit >= rhs.value.begin() || leftover != 0)
+		{
 			tempOut = std::atoi(&*ldigit) + std::atoi(&*rdigit) + leftover;
-			// tempOut = asd;
-			leftover = tempOut % 10;
-			output.value.insert(output.value.begin(),tempOut);
+			if (tempOut > 9)
+			{
+				leftover = tempOut / 10;
+				tempOut = tempOut % 10;
+			}
+			output.value.insert(output.value.begin(), tempOut); // lists > strings? :?
 
 			--rdigit;
 			--ldigit;
+			leftover = 0;
+		}
+
+		return output;
+	}
+
+	LongNatural operator-(LongNatural const &rhs) const
+	{
+		auto rdigit = rhs.value.end();
+		auto ldigit = this->value.end();
+		int leftover = 0;
+		int tempOut;
+		LongNatural output;
+
+		while (rdigit >= rhs.value.begin() || leftover != 0)
+		{
+			tempOut = std::atoi(&*ldigit) - std::atoi(&*rdigit) + leftover;
+			if (tempOut > 9)
+			{
+				leftover = tempOut / 10;
+				tempOut = tempOut % 10;
+			}
+			output.value.insert(output.value.begin(), tempOut); // lists > strings? :?
+
+			--rdigit;
+			--ldigit;
+			leftover = 0;
+		}
+
+		return output;
+	}
+
+	// Cambiar por karatsuba
+	LongNatural operator*(LongNatural const &rhs) const 
+	{
+		auto rdigit = rhs.value.end();
+		auto ldigit = this->value.end();
+		int leftover = 0;
+		int tempOut;
+		LongNatural output;
+
+		while (rdigit >= rhs.value.begin() || leftover != 0)
+		{
+			tempOut = std::atoi(&*ldigit) * std::atoi(&*rdigit) + leftover;
+			if (tempOut > 9)
+			{
+				leftover = tempOut / 10;
+				tempOut = tempOut % 10;
+			}
+			output.value.insert(output.value.begin(), tempOut); // lists > strings? :?
+
+			--rdigit;
+			--ldigit;
+			leftover = 0;
 		}
 
 		return output;
@@ -91,7 +153,7 @@ std::vector<T> MergeSort(const std::vector<T> &l) // TODO: void MergeSort()
 	return l;
 }
 
-// Semana 2
+// Semana 2 ------------------------------------------------------------------
 template <class T>
 int CountInversions(const std::vector<T> &l)
 {
@@ -135,7 +197,7 @@ int CountInversions(const std::vector<T> &l)
 	return 0;
 }
 
-// Semana 3
+// Semana 3 ------------------------------------------------------------------
 struct point
 {
 	int x;
@@ -192,7 +254,7 @@ void QuickSort(
 		QuickSort(A, i, r);
 }
 
-// Semana 4
+// Semana 4 ------------------------------------------------------------------
 int RSelect() { return 0; }
 
 int DSelect() { return 0; }
@@ -202,7 +264,7 @@ struct node
 	std::string label;
 	bool explorado;
 
-	//void * operator new(size_t n, std::string l){}
+	// void * operator new(size_t n, std::string l){}
 
 	bool operator==(node const &rhs) const
 	{
@@ -293,6 +355,8 @@ graph MinCut(const graph &G)
 	return bestAttempt;
 }
 
+// Semana 5 ------------------------------------------------------------------
+
 struct node2
 {
 	std::string label;
@@ -301,11 +365,10 @@ struct node2
 // typedef std::string node;
 typedef std::vector<node2 *> adjacent2;
 typedef std::map<node2, adjacent2> graph2;
-// Semana 5
-void BusquedaAnchura(graph2 &G, node2 *s)
+void BusquedaAnchura(graph2 &G, node2 &s)
 {
 	// std::vector<std::string> exp;
-	std::deque<node2 *> Q = {s};
+	std::deque<node2 *> Q = {&s};
 
 	// O(n_s)
 	while (!Q.empty())
@@ -324,14 +387,30 @@ void BusquedaAnchura(graph2 &G, node2 *s)
 			}
 		};
 	}
+	return;
 }
 
-void BusquedaProfundidad(){};
+void BusquedaProfundidad(graph2 &G, node2 &s)
+{
+	std::stack<node2 *> Q;
+
+	while (!Q.empty())
+	{
+		// 
+	}
+	return;
+};
 
 int main()
 {
 	std::vector<int> sortEx = {5, 4, 1, 8, 7, 2, 6, 3, 9};
 	QuickSort<int>(&sortEx, sortEx.begin(), sortEx.end());
+
+	// LongNatural l1;
+	// l1.value = "12345";
+	// LongNatural l2;
+	// l2.value = "837";
+	// auto l3 = l1 + l2;
 
 	graph test01;
 	auto cut01 = MinCut(test01);
