@@ -55,8 +55,8 @@ double sum(const vector<double>&);
 // -- Empty pointers --
 int count_x(const char* p, char x)
     // count the number of occurrences of x in p[]
-    // p is assumed to point to a zero-terminated (C-style!) array of char (or to nothing)
-    // if p where a string it wouldn't work?¿?
+    // p is assumed to point to a zero-terminated (C-style) array of char (or to nothing)
+    // if p were a string it wouldn't work?¿?
 {
     if (p==nullptr) // !
             return 0;

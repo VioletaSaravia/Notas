@@ -1,8 +1,6 @@
-# Algoritmos
+# Principios para Analizar Algoritmos
 
-## Principios para Analizar Algoritmos
-
-### Principio #1
+## Principio #1
 
 - Análisis pesimista: el tiempo de ejecución que calculemos vale para cualquier input posible si calculamos el peor caso posible de largo n. A diferencia de los otros 2, no requiere conocer el dominio de la rutina.
 
@@ -10,7 +8,7 @@
 
 - Benchmark: Convención de inputs.
 
-### Principio #2
+## Principio #2
 
 No prestar mucha atención a los factores constantes.
 
@@ -20,13 +18,13 @@ No prestar mucha atención a los factores constantes.
 
 - Muy poca diferencia para predecir performance.
 
-### Principio #3
+## Principio #3
 
 Análisis asintótico: Concentrarse en tiempo de ejecución para inputs *grandes* de n.
 
 Ejemplo: $6n\log_2(n)+6n$ es "mejor que" $1/2n^2$, es decir, es mejor para valores suficientemente grandes de n.
 
-## Análisis Asintótico
+# Análisis Asintótico
 
 Vocabulario usado para el diseño y análisis de algoritmos. Nos permite simplificar detalles de implementación, pero complejizar comparaciones predictivas entre algoritmos distintos, especialmente con inputs grandes.
 
@@ -54,7 +52,7 @@ Definición: $T(n)=O(f(n))$ si y sólo si existen constantes $c,n_0>0$ tal que $
 
 Definición: $T(n)=o(f(n))$ si y sólo si para *todas* las constantes $c>0$, existe una constante $n_0$ tal que $T(n)\le c\cdot f(n),\forall n\ge n_0$.
 
-## Divide and Conquer
+# Divide and Conquer
 
 1) Dividir el problema en parte menores (A veces implica acotar input, a veces es sólo conceptual).
 
@@ -83,23 +81,23 @@ else
 
 # Master Method
 
-### Ejemplo: Multiplicación de Enteros
+## Ejemplo: Multiplicación de Enteros
 
 T(n) = Máximo número de operaciones que el algoritmo necesita para multiplicar dos números de n dígitos.
 
 Recurrencia: expresar T(n) en términos de llamadas recursivas.
 
-### Requisitos
+## Requisitos
 
 - Todos los subproblemas tienen tamaño igual.
 
-### Formato
+## Formato
 
 1) Caso base: T(n) <= constante para n lo suficientemente pequeño.
 
 2) Para todo n mayor: $T(n)<=aT(n/b) + O(n^d)$, con a = n° de subproblemas (>= 1), b = factor por el que se encoje el input (> 1), d = exponente in tiempo de suma al combinar (>= 0) (los 3 *independientes* de n).
 
-### Definición
+## Definición
 
 $T(n) = \left\{\begin{array}{lr}
         O(n^d\log n), & \text{si } a=b^d\\
@@ -109,7 +107,7 @@ $T(n) = \left\{\begin{array}{lr}
 
 (Nota: La base del primer log no importa, porque la diferencia entre dos bases es un factor constante, y la notación $O()$ suprime las constantes.)
 
-### Interpretación
+## Interpretación
 
 $Trabajo Total\leq cn^d*\sum_{j=0}^{log_bn}[a/b^d]^j$
 
@@ -133,7 +131,7 @@ Idea clave: Array partición alrededor de un elemento pivot.
 - Ordenar elementos menores a la izquierda
 - Ordenar elementos mayores a la derecha
 
-### Particiones
+## Particiones
 1) Tiempo lineal $O(n)$, sin consumir más memoria
 2) Reduce tamaño del problema (D&C)
 
@@ -142,7 +140,7 @@ Idea general:
 - Invariante: todo n que ya recorrimos está particionado
 - Dos indices: $j = split \text{ escaneado/no escaneado}, i = split < p, >p$
 
-### Descripción
+## Descripción
 
 ```
 QuickSort (array A, largo n)
@@ -153,7 +151,7 @@ QuickSort (array A, largo n)
         QuickSort( A[p:end] )
 ```
 
-### Pivots
+## Pivots
 
 El tiempo de ejecución de QuickSort depende de la *calidad* del pivot. Un pivot es de buena calidad si divide el array en dos subproblemas de tamaño lo más igual posible.
 
@@ -186,7 +184,7 @@ Algoritmo general:
 2) Expresar $Y$ como suma de variables aleatorias indicadoras.
 3) Aplicar linealidad de expectativas.
 
-## Problema de Selección
+# Problema de Selección
 
 Input: Array A con n distintos (para simplificar) números y un número $i\in \{1,2,...,n\}$.
 
@@ -194,7 +192,7 @@ Output: Elemento iésimo más pequeño de A.
 
 Ejemplo: Mediana. $i=(n+1)/2$ para n impar, $i=n/2$ para n par.
 
-### Reducción
+## Reducción
 
 Solucionar un problema en términos de otros problemas.
 
@@ -224,11 +222,11 @@ Input: Grafo no-dirigido $G=(V,E)$ (aristas paralelas permitidas).
 
 Meta: Computar un corte con el número menor posible de aristas cruzadas.
 
-## Representaciones de Grafos
+# Representaciones de Grafos
 
 Sea $n$ el núm. de vertices, $m$ el núm. de aristas: en la mayoría de sus aplicaciones, m es al menos $\Omega (n)$ y como máximo $O(n^2)$. En un grafo disperso, m es $O(n)$ o cerca; en un grafo denso, m es $O(n^2)$ o cerca.
 
-### Matriz de adyacencia
+## Matriz de adyacencia
 
 Representar a $G$ con una matriz binaria de $n\ x\ n$, donde $A_{ij}=1\Leftrightarrow\text{ G tiene una arista i-j}$. Su costo de espacio es cuadrático, por lo que es más optimo para grafos densamente poblados.
 
@@ -238,7 +236,7 @@ Variantes:
 - $A_{ij}$ puede ser el peso en un grafo pesado.
 - $A_{ij}$ puede ser +1 para aristas $i\rightarrow j$, y -1 para lo opuesto.
 
-### Listas de adyacencia
+## Listas de adyacencia
 
 Espacio: $\Theta (m+n)$ (Es decir, $\Theta(max\{m,n\})$)
 
@@ -247,7 +245,7 @@ Espacio: $\Theta (m+n)$ (Es decir, $\Theta(max\{m,n\})$)
 - Cada arista apunta a sus vertices (+ dirección si la hay)
 - Cada vértice apunta a su aristas incidentes (si hay dirección, puede apuntar sólo a las colas)
 
-## Algoritmo de Contracción Aleatoria (Karger)
+# Algoritmo de Contracción Aleatoria (Karger)
 
 1) Mientras haya más de dos vertices:
    - Elegir una arista $(u,v)$ restante al azar, de manera uniforme
@@ -297,10 +295,238 @@ Si tomamos $N=n^2$, $Pr[\text{todos fallen}]\leq (e^{-1/n^2})^{n^2}=\frac{1}{e}$
 
 Para $N = n^2\ln n$, $Pr[\text{todos fallen}]\leq \frac{1}{e}^{\ln n}=1/n$
 
-### Tiempo de Ejecución
+## Tiempo de Ejecución
 
 Polinómico en $n$ y $m$ pero lento $(\Omega(n^2m))$. Pero: Hay mejores implementaciones que llegan más o menos a $O(n^2)$.
 
-### Número de cortes mínimos
+## Número de cortes mínimos
 
 Un grafo puede tener múltiples cortes mínimos (e.g. un árbol con $n$ vértices tiene $n-1$ cortes mínimos). El número más grande de cortes mínimos que puede tener un grafo de $n$ vértices es ${n \choose 2} = \frac{n(n-1)}{2}$
+
+# Búsqueda de Grafos
+
+## Usos
+1) Revisar si una red está completamente conectada
+2) Direcciones de conducción (camino más corto)
+3) Formular un plan (e.g. cómo llenar sudoku)
+4) Computar las "piezas" (o "componentes") de un grafo (clustering, estructura de un grafo web, etc.)
+
+## Búsqueda Genérica de Grafos
+1) Encontrar todo lo encontrable desde un vértice $v$. En un grafo no-dirigido, son todos los que tocan recursivamente a $v$. En un grafo dirigido, los que pueden trazar una dirección hacia $v$.
+2) No explorar nada dos veces ($O(m+n)$).
+
+## Algoritmo Genérico
+- Dado grafo $G$, vértice $s$, pensar a los nodos como explorados/no explorados.
+- Loop: Elegir (?) arista $(u,v)$ con $u$ explorado y $v$ sin explorar. Marcar $v$ explorado.
+- Finalmente: $v$ explorado $\Leftrightarrow$ $G$ (dirigido o no) tiene un camino de $s$ a $v$.
+
+# Búsqueda por Anchura
+- ($O(m+n)$) usando queue(FiFo)
+- Explorar nodos en "capas"
+- Computar camino más corto
+- Computar componentes conectados un un grafo no-dirigido
+```
+1) Bool explorado = False en cada nodo
+2) s.explorado = True
+3) Q = Queue initializado con s
+4) Mientras $Q\not ={\empty}$:
+   - remover primer nodo de Q, llamese v
+   - por cada arista (v,w):
+     - si !w.explorado:
+       - w.explorado = true
+       - agregar w al final de Q
+```
+Tiempo de ejecución = $O(n_s+m_s)$, con $n_s=\#$ de nodos alcanzables desde $s$, y $m_s=\#$ de aristas alcanzables desde $s$.
+
+## Caminos más Cortos
+
+Objetivo: Computar dist(v), el # menor de aristas en un camino de s a v.
+```
+- inicializar dist(v)= 0
+- Al considerar (v,w):
+  - Si !w.explorado => dist(w)=dist(v)+1
+- dist(v)=1 <=> v está en capa iésima (i aristas entre s y v)
+```
+## Aplicación: Conectividad No-dirigida
+
+Sea $G=(V,E)$ un gráfico no dirigido. Sus componentes conectados ("piezas") son las máximas regiones conectadas, i.e. las clases de equivalencia de la relación $u\sim v \Leftrightarrow \exists (u,v) \in G$.
+
+Meta: Computar todos los componentes conectados.
+
+Computar conectividad via BFS ($O(m+n)$):
+```
+Todos los nodos sin explorar (etiquetados 1 a n) //(O(n))
+For i=1; i < n //(O(n))
+  si !i.explorado:
+    BFS(G,i) // Explora toda la clase de equiv.
+```
+
+# Búsqueda por Profundidad
+- ($O(m+n)$) usando stack(LiFo)
+- Explorar en una dirección hasta que sea necesario volver
+- Computar orden topologico de grafo dirigido (y acíclico)
+- Computar componentes conectados en grafos dirigidos
+
+## Aplicación: Sorting Topológico
+
+El *orden topológico* de un grafo dirigido $G$ es una manera de etiquetar $F$ de los nodos de $G$, tal que:
+1) Los $f(v)$ sean el conjunto $\{1,2,...,n\}$
+2) $(u,v)\in G\Rightarrow f(u)<f(v)$
+
+Utilidad: Secuenciar tareas respetando la restricción de precedencia.
+
+No hay orden topológico posible si $G$ es cíclico y dirigido. Si no lo es, el orden topológico puede computarse en $O(m+n)$. Entonces, para computar un orden topológico, se empieza en un vértice terminal $v$, $f(v)=n$ y se recorre $G-\{v\}$
+
+## Sorting topológico con DFS (O(m+n))
+
+```
+DFS(grafo G, vertice inicial s)
+s.explorado = true
+for (edge s, v):
+  if !v.explored:
+    DFS(G, v)
+f(s) = current_label
+--current_label
+
+DFS-Loop(grafo G)
+marcar todo sin explorar
+current_label = n // rastrear ordenamientos (f)
+for (v in G):
+  if !v.explorado:
+    DFS(G, v)
+```
+
+# Computo de Componentes Fuertes
+
+Los SCCs de un grafo dirigido $G$ son las clases de equivalencia de la relacion $u\sim v \Leftrightarrow \exists u\rightarrow v \land v\rightarrow u \in G$.
+
+## Algoritmo de Kosaraju
+
+Computa SCCs en $O(m+n)$.
+
+1) Invertir todos los arcos de $G$.
+2) Ejecutar DFS-Loop en $G^{rev}$ (En vez de copiar G, implementar DFS-Loop que vaya en reversa).
+3) Ejecutar DFS-Loop en $G$.
+
+El paso 2) computa el orden ideal de los nodos. Al ejecutar 3) en el orden dado por 2), encontramos exactamente los SCCs máximos sin recorrer de más. Sea $f(v)$ el "tiempo" de finalización de cada $v\in V$; 3) procesa los nodos por $f(v)$ decreciente.
+
+# Algoritmo de Dijkstra
+
+Input: Grafo dirigido $G=(V,E)$ (con $m=|E|,n=|V|$)
+- Cada E tiene un largo *no-negativo* $l_e$.
+- Vértice de origen s
+
+Output: Para cada $v\in V$, calcular $L(v):=$ largo del camino s-v más corto.
+
+Asumimos:
+1) Siempre hay un camino de s a v (si no lo hubiera, se puede ver con *FS)
+2) $l_e\geq 0,\forall e\in E$
+
+## Pseudocódigo
+
+```
+X = {s} // Vértices procesados hasta ahora
+A[s] = 0 // Distancias más cortas calculadas
+while (X != V):
+  for (v, w):
+    if (v in X, w not in X):
+      Elegir (v,w) que minimice A[v] + l_vw // criterio de dijkstra
+      // (v*, w*)
+      X += w*
+      A[w*] := A[v*] + l_v*w*
+```
+
+## Implementación
+
+Regla general al elegir estructuras de datos: Elegir la estructura "mínima" que soporta las operaciones necesarias.
+
+Ver después de Heaps.
+
+# Heaps
+
+También llamado priority-queue. Contenedor para objetos con claves (registros de empleadores, aristas de una red, acontecimiento y fecha como clave, etc.).
+
+## Operaciones
+- Insert: agregar objeto. $O(\log n)$
+- Extract-min [o Extract-max haciendo $k\cdot -1$]: remover un objeto con la clave de valor mínimo (desempates automáticos). $O(\log n)$
+- Heapify: Batch $n$ de inserts en $O(n)$).
+- Delete: $O(\log n)$
+
+## Aplicaciones de heaps
+
+Realizar computaciones mínimas repetidas.
+
+### Ejemplo
+
+- SelectionSort $\simeq O(n)$ escaneos, $O(n^2)$ tiempo de ejecución.
+- Heapsort: $O(n \log n)$
+  
+  1) Insertar todos los elementos en un heap.
+  2) Extract-min para quitar elementos en orden.
+
+### Ejemplo 2: Administrador de Eventos
+
+- Objetos = registros de eventos (acción que ocurrirá en el futuro)
+- clave: Tiempo en el que debe ocurrir
+
+# Balanced Binary Search Trees
+
+## Operaciones
+
+Operaciones de un array ordenado común:
+- Búsqueda: $O(\log n)$
+- Select (para orden $i$): $O(1)$
+- Min/Max: $O(1)$
+- Predecesor/Sucesor (dado pointer a una clave): $O(1)$
+- Rank (# de claves $\leq$ valor dado): $O(\log n)$
+- Output ordenado: $O(n)$
+- **Insertar/borrar: $O(n)$ (!)**
+
+Operaciones de un Balanced Search Tree:
+- Búsqueda: $O(\log n)$
+- *Select:* $O(\log n)$
+- *Min/max:* $O(\log n)$
+- *Pred/suc:* $O(\log n)$
+- Rank: $O(\log n)$
+- Output ordenado: $O(n)$
+- **Insert/delete: $O(\log n)$**
+
+## Binary Search Tree
+
+- Exactamente un nodo por clave
+- Tres pointers por nodo: LChild, RChild y Parent
+
+### Propiedades
+
+- En todo nivel, nodos a la izquierda son menores, nodos a la derecha son mayores (+ convención para lidiar con claves empatadas).
+- Un conjunto de claves se pueden organizar con muchos Binary Trees distintos. La *altura/profundidad* (saltos de raíz a hoja) del arbol podría ser $\simeq \log_2n$ en el mejor de los casos (arbol balanceado) o $\simeq n$ en el peor de los casos (una cadena).
+
+## Algoritmos
+
+Para clave $k$ en arbol $T$:
+- Búsqueda: Empezar en la raíz de $T$, moverse a la izq/der, terminar con $k$ o $nullptr$.
+- Inserción: Buscar a $k$, agregar $k$ donde estaba el $nullptr$ de la búsqueda de $k$.
+- Min/max: Equivalente a buscar $-\inf$ o $\inf$ y devolver última clave encontrada.
+- Predecesor/sucesor: Si el subarbol de $k$ no está vacío, debe ser $max(izq)$. Si no, seguir parents hasta encontrar una clave menor a $k$. Al revés para el sucesor.
+- Recorrido en orden: $O(n)$.
+
+### Borrado
+
+Buscar a $k$. Si no tiene hijos, podemos borrarlo sin problemas. Si tiene un hijo, ese hijo simplemente asume la posición del padre. Si tiene dos: Computar predecesor $l$ de $k$, intercambiarlos. Ahora k no tiene hijo derecho así que se elimina sin problemas.
+
+### Select y Rank
+
+Idea: Almacenar data extra sobre el árbol en cada nodo. 
+
+Ejemplo: $size(x) = \#$ de nodos árbol en el subárbol con raíz $x$. Si $x$ tiene hijos $y,z \Rightarrow size(x) = y+z+1$. Nota: hay que mantener los valores cada vez que se realiza una operación de Insert o Delete.
+
+## Red-Black Tree
+
+Idea: Asegurarse que el árbol sea balanceado, manteniendo la altura en $O(\log n)$, lo que mantiene varias de las operaciones logarítmicas. Ejemplo: Árboles rojo-negro [Bayer, 1972]. Todo árbol rojo-negro con $n$ nodos cumple $h\leq 2\log_2(n+1)$ (ver también árboles AVL, splaytrees, B trees y B+ trees para DBD).
+
+### Invariantes
+
+1) Cada nodo es rojo o negro (tinyint).
+2) La raíz siempre es negra.
+3) Nunca hay dos rojos de corrido (i.e. los hijos de un rojo tienen que ser negros, y el padre de un rojo siempre es negro).
+4) Todos los recorridos de raíz a nullptr (i.e. búsquedas fallidas) pasan por la misma cantidad de nodos negros.

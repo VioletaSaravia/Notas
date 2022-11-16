@@ -7,40 +7,46 @@
 #include <map>
 #include <deque>
 #include <stack>
+#include <set>
+#include <algorithm>
 
 // Semana 1 ------------------------------------------------------------------
 
-//typedef std::string LongNatural;
+// typedef std::string LongNatural;
 struct LongNatural
 {
 	std::string value;
 
-	LongNatural operator+(LongNatural const &rhs) const
+	std::string operator+(LongNatural const &rhs) const
 	{
-		auto rdigit = rhs.value.end();
-		auto ldigit = this->value.end();
+		auto rindex = size(rhs.value) - 1;
+		auto lindex = size(this->value) - 1;
 		int leftover = 0;
 		int tempOut;
-		LongNatural output;
+		std::string output;
 
-		while (rdigit >= rhs.value.begin() || leftover != 0)
+		while (rindex >= 0 || leftover != 0)
 		{
-			tempOut = std::atoi(&*ldigit) + std::atoi(&*rdigit) + leftover;
+			auto rvalue = rhs.value[rindex];
+			auto lvalue = this->value[lindex];
+			tempOut = int(lvalue) + int(rvalue) + leftover;
 			if (tempOut > 9)
 			{
 				leftover = tempOut / 10;
 				tempOut = tempOut % 10;
 			}
-			output.value.insert(output.value.begin(), tempOut); // lists > strings? :?
+			// lists > strings? :?
+			output += std::to_string(tempOut);
 
-			--rdigit;
-			--ldigit;
-			leftover = 0;
+			--rindex;
+			--lindex;
+			// leftover = 0;
 		}
 
 		return output;
 	}
 
+	// etc.
 	LongNatural operator-(LongNatural const &rhs) const
 	{
 		auto rdigit = rhs.value.end();
@@ -57,7 +63,8 @@ struct LongNatural
 				leftover = tempOut / 10;
 				tempOut = tempOut % 10;
 			}
-			output.value.insert(output.value.begin(), tempOut); // lists > strings? :?
+			// lists > strings? :?
+			output.value.insert(output.value.begin(), tempOut);
 
 			--rdigit;
 			--ldigit;
@@ -68,7 +75,7 @@ struct LongNatural
 	}
 
 	// Cambiar por karatsuba
-	LongNatural operator*(LongNatural const &rhs) const 
+	LongNatural operator*(LongNatural const &rhs) const
 	{
 		auto rdigit = rhs.value.end();
 		auto ldigit = this->value.end();
@@ -84,7 +91,8 @@ struct LongNatural
 				leftover = tempOut / 10;
 				tempOut = tempOut % 10;
 			}
-			output.value.insert(output.value.begin(), tempOut); // lists > strings? :?
+			// lists > strings? :?
+			output.value.insert(output.value.begin(), tempOut);
 
 			--rdigit;
 			--ldigit;
@@ -104,7 +112,7 @@ std::vector<T> MergeSort(const std::vector<T> &l) // TODO: void MergeSort()
 	{
 		std::vector<T> first_half;
 		std::vector<T> second_half;
-		std::vector<T>::const_iterator halve = l.begin() + int(l_size / 2);
+		typename std::vector<T>::const_iterator halve = l.begin() + int(l_size / 2);
 		copy(l.begin(), halve, back_inserter(first_half));
 		copy(halve, l.end(), back_inserter(second_half));
 
@@ -198,15 +206,35 @@ int CountInversions(const std::vector<T> &l)
 }
 
 // Semana 3 ------------------------------------------------------------------
+template <class T>
 struct point
 {
-	int x;
-	int y;
+	T x;
+	T y;
+
+	point operator+(const point rhs)
+	{
+		return {{x = this->x + rhs.x},
+				{y = this->y + rhs.y}};
+	}
+
+	point operator-(const point rhs)
+	{
+		return {{x = this->x - rhs.x},
+				{y = this->y - rhs.y}};
+	}
+
+	point operator*(const T rhs)
+	{
+		return {{x = this->x * rhs},
+				{y = this->y * rhs}};
+	}
 };
 
-std::vector<point> ClosestPair(const std::vector<point> &p)
+template <class T>
+std::vector<point<T>> ClosestPair(const std::vector<point<T>> &p)
 {
-	std::vector<point> closest;
+	std::vector<point<T>> closest;
 
 	/* */
 
@@ -215,13 +243,13 @@ std::vector<point> ClosestPair(const std::vector<point> &p)
 
 template <class T>
 void QuickSort(
-	std::vector<T> *A, // no es lo que hace copy()
+	std::vector<T> &A,
 	typename std::vector<T>::iterator l,
 	typename std::vector<T>::iterator r)
 {
 	auto i = l;
-	std::vector<T>::iterator j;
-	if (r != (*A).end())
+	typename std::vector<T>::iterator j;
+	if (r != A.end())
 	{
 		j = r;
 	}
@@ -276,14 +304,9 @@ struct node
 		return this->label != rhs.label;
 	}
 
-	std::ostream &operator<<(std::ostream &os)
+	bool operator<(node const &rhs) const
 	{
-		return os << this->label;
-	}
-
-	std::istream &operator>>(std::istream &is)
-	{
-		return is >> this->label;
+		return this->label < rhs.label;
 	}
 };
 // typedef std::string node;
@@ -364,8 +387,9 @@ struct node2
 };
 // typedef std::string node;
 typedef std::vector<node2 *> adjacent2;
-typedef std::map<node2, adjacent2> graph2;
-void BusquedaAnchura(graph2 &G, node2 &s)
+typedef std::map<node2 *, adjacent2> graph2;
+
+void BusquedaA(graph2 &G, node2 &s)
 {
 	// std::vector<std::string> exp;
 	std::deque<node2 *> Q = {&s};
@@ -376,7 +400,7 @@ void BusquedaAnchura(graph2 &G, node2 &s)
 		auto v = Q.front();
 		Q.pop_front();
 		// O(m_s)
-		for (auto w : G[*v])
+		for (auto w : G[v])
 		{
 			if (!(w->explorado))
 			{
@@ -390,27 +414,146 @@ void BusquedaAnchura(graph2 &G, node2 &s)
 	return;
 }
 
-void BusquedaProfundidad(graph2 &G, node2 &s)
+void __UnaBusquedaP(graph2 &G, node2 *s)
 {
-	std::stack<node2 *> Q;
-
-	while (!Q.empty())
+	s->explorado = true;
+	for (auto v : G[s])
 	{
-		// 
+		if (!v->explorado)
+		{
+			__UnaBusquedaP(G, v);
+		}
 	}
 	return;
 };
 
-int main()
+void BusquedaP(graph2 &G)
+{
+	for (auto n : G)
+	{
+		n.first->explorado = false;
+	}
+	auto current_label = size(G);
+
+	for (auto v : G)
+	{
+		if (!(v.first->explorado))
+		{
+			__UnaBusquedaP(G, v.first);
+		}
+	}
+	return;
+};
+
+// Semana 6 ------------------------------------------------------------------
+
+struct Node
+{
+	std::string label;
+	std::string explorado;
+};
+
+struct Edge
+{
+	Node *first;
+	Node *second;
+	int length;
+};
+
+struct Graph
+{
+	std::set<Node *> node;
+	std::vector<Edge> edge;
+};
+
+void dijkstra(Graph &G, Node *s)
+{
+	std::set<Node *> X = {s};
+	std::map<Node *, int> dist;
+	dist[s] = 0;
+	while (X != G.node)
+	{
+		for (auto e : G.edge)
+		{
+			int crit_actual;
+			int crit_minimo = INT32_MAX;
+			Edge *minimo;
+			if (X.find(e.first) != X.end())
+			{
+				crit_actual = dist[e.first] + e.length;
+				if (crit_minimo > crit_actual)
+				{
+					crit_minimo = crit_actual;
+					minimo = &e;
+				};
+			}
+			X.insert(minimo->second);
+			dist[minimo->second] = crit_minimo;
+		}
+	}
+};
+
+// Semana 7 ------------------------------------------------------------------
+
+/*
+TODO
+	- Heaps
+	- Dijsktra con Heaps
+	- Administrador de Eventos
+	- Binary Search Tree
+	- Red-Black Tree
+	- Insert y Rotations en RBT
+*/
+
+template <class T>
+class BSTree
+{
+private:
+public:
+	struct BTNode
+	{
+		int key;
+		T value;
+		int size; // tamaño del subarbol
+		*BTNode Parent, LNode, RNode;
+	};
+	*BTNode root;
+
+	BTNode operator[](int k) // pointer o valor?
+	{
+		*BTNode current_node = root;
+		while (current_node.key != k)
+		{
+			current_node = current_node.LNode ? k < current_node.key : current_node.RNode;
+			if (current_node = nullptr)
+			{
+				break; // TIRAR ERROR
+			}
+		}
+		return *current_node;
+	};
+};
+
+// Semana 8 ------------------------------------------------------------------
+
+/*
+TODO
+	- Hash tables
+	- Bloom Filter
+	- 2-SUM algorithm
+*/
+
+main()
 {
 	std::vector<int> sortEx = {5, 4, 1, 8, 7, 2, 6, 3, 9};
-	QuickSort<int>(&sortEx, sortEx.begin(), sortEx.end());
+	QuickSort(sortEx, sortEx.begin(), sortEx.end()); // type inferrence
 
-	// LongNatural l1;
-	// l1.value = "12345";
-	// LongNatural l2;
-	// l2.value = "837";
-	// auto l3 = l1 + l2;
+	LongNatural L1;
+	L1.value = "12345";
+	LongNatural L2;
+	L2.value = "837";
+	LongNatural L3;
+	L3.value = L1 + L2;
 
 	graph test01;
 	auto cut01 = MinCut(test01);
