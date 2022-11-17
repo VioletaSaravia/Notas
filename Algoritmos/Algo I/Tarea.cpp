@@ -9,6 +9,8 @@
 #include <stack>
 #include <set>
 #include <algorithm>
+//#include <tarea.hpp>
+#include <assert.h>
 
 // Semana 1 ------------------------------------------------------------------
 
@@ -466,72 +468,205 @@ struct Graph
 	std::vector<Edge> edge;
 };
 
-void dijkstra(Graph &G, Node *s)
-{
-	std::set<Node *> X = {s};
-	std::map<Node *, int> dist;
-	dist[s] = 0;
-	while (X != G.node)
-	{
-		for (auto e : G.edge)
-		{
-			int crit_actual;
-			int crit_minimo = INT32_MAX;
-			Edge *minimo;
-			if (X.find(e.first) != X.end())
-			{
-				crit_actual = dist[e.first] + e.length;
-				if (crit_minimo > crit_actual)
-				{
-					crit_minimo = crit_actual;
-					minimo = &e;
-				};
-			}
-			X.insert(minimo->second);
-			dist[minimo->second] = crit_minimo;
-		}
-	}
-};
+// void dijkstra(Graph &G, Node *s)
+// {
+// 	std::set<Node *> X = {s};
+// 	std::map<Node *, int> dist;
+// 	dist[s] = 0;
+// 	while (X != G.node)
+// 	{
+// 		for (auto e : G.edge)
+// 		{
+// 			int crit_actual;
+// 			int crit_minimo = INT32_MAX;
+// 			Edge *minimo;
+// 			if (X.find(e.first) != X.end())
+// 			{
+// 				crit_actual = dist[e.first] + e.length;
+// 				if (crit_minimo > crit_actual)
+// 				{
+// 					crit_minimo = crit_actual;
+// 					minimo = &e;
+// 				};
+// 			}
+// 			X.insert(minimo->second);
+// 			dist[minimo->second] = crit_minimo;
+// 		}
+// 	}
+// };
 
 // Semana 7 ------------------------------------------------------------------
 
 /*
 TODO
 	- Heaps
-	- Dijsktra con Heaps
-	- Administrador de Eventos
+	- Median maintenance
 	- Binary Search Tree
 	- Red-Black Tree
 	- Insert y Rotations en RBT
 */
 
 template <class T>
+class MediansHeap
+{
+private:
+	struct Heap
+	{
+	};
+};
+
+enum color
+{
+	red,
+	black
+};
+
+template <class T>
 class BSTree
 {
 private:
-public:
-	struct BTNode
+	struct BSNode
 	{
 		int key;
 		T value;
-		int size; // tamaño del subarbol
-		*BTNode Parent, LNode, RNode;
+		BSNode *parent;
+		BSNode *left = nullptr;
+		BSNode *right = nullptr;
+		// color c;
 	};
-	*BTNode root;
-
-	BTNode operator[](int k) // pointer o valor?
+	void crear_nodo_vacio(BSNode &n)
 	{
-		*BTNode current_node = root;
-		while (current_node.key != k)
+		auto empty_left = new BSNode{
+			parent : &n
+		};
+		auto empty_right = new BSNode{
+			parent : &n
+		};
+		n.left = empty_left;
+		n.right = empty_right;
+
+		return;
+	}
+	BSNode *m_root = nullptr;
+
+public:
+	// Insertar
+	BSTree()
+		: m_root{new BSNode{}}
+	{
+		crear_nodo_vacio(*m_root);
+	}
+	BSTree(std::pair<int, T> n)
+		: m_root{new BSNode{key : n.first, value : n.second}}
+	{
+		crear_nodo_vacio(*m_root);
+	}
+
+	void insert(std::pair<int, T> n)
+	{
+		BSNode &new_node = this[n.first]; // :$
+
+		new_node.key = n.first;
+		new_node.value = n.second;
+
+		crear_nodo_vacio(new_node);
+
+		return;
+	}
+	void remove(int k)
+	{
+		BSNode result = this[k];
+		if (result.left == nullptr && result.right == nullptr)
 		{
-			current_node = current_node.LNode ? k < current_node.key : current_node.RNode;
-			if (current_node = nullptr)
-			{
-				break; // TIRAR ERROR
-			}
+			result.parent->left == nullptr; // ver si es izq o der
+			delete result;					// no lol
 		}
-		return *current_node;
+		else if (result.left == nullptr || result.right == nullptr)
+		{
+			/* code */
+		}
+		else
+		{
+			/* code */
+		}
+
+		return;
+	}
+	// cuenta un orden de más :/ porque no usé iterators
+	int size(int k)
+	{
+		BSNode s = this[k];
+		int left = s.left != nullptr ? size((s.left)->key) : 0;
+		int right = s.right != nullptr ? size((s.right)->key) : 0;
+		return left + right + 1;
+	}
+
+	// Busqueda O(log n)
+	BSNode operator[](int i)
+	{
+		BSNode output = *m_root;
+		while (output.key != i && output.key != 0)
+		{
+			output = output.key < i ? *(output.left) : *(output.right);
+		}
+
+		return output;
 	};
+
+	// Mejorar
+	BSNode min(int k)
+	{
+		BSNode output = this[k];
+		while (output.left != nullptr)
+		{
+			output = *(output.left);
+		}
+		return output;
+	}
+	BSNode max(int k)
+	{
+		BSNode output = this[k];
+		while (output.right != nullptr)
+		{
+			output = *(output.right);
+		}
+		return output;
+	}
+
+	BSNode prev(int k)
+	{
+		BSNode s = *(this[k]);
+		if (s.left != nullptr || s.right != nullptr)
+		{
+			return this.max(s.left->key); // revisar logica
+		}
+		BSNode output = s;
+		while (output.key >= k)
+		{
+			if (output.parent == nullptr)
+			{
+				return s; // devolver error
+			}
+			output = *(output.parent);
+		}
+	}
+	BSNode next(int k)
+	{
+		BSNode s = *(this[k]);
+		if (s.right != nullptr || s.left != nullptr)
+		{
+			return this.max(s.right->key); // revisar logica
+		}
+		BSNode output = s;
+		while (output.key >= k)
+		{
+			if (output.parent == nullptr)
+			{
+				return s; // devolver error
+			}
+			output = *(output.parent);
+		}
+	}
 };
 
 // Semana 8 ------------------------------------------------------------------
@@ -543,20 +678,24 @@ TODO
 	- 2-SUM algorithm
 */
 
-main()
+int main()
 {
 	std::vector<int> sortEx = {5, 4, 1, 8, 7, 2, 6, 3, 9};
 	QuickSort(sortEx, sortEx.begin(), sortEx.end()); // type inferrence
 
-	LongNatural L1;
-	L1.value = "12345";
-	LongNatural L2;
-	L2.value = "837";
-	LongNatural L3;
-	L3.value = L1 + L2;
+	// LongNatural L1;
+	// L1.value = "12345";
+	// LongNatural L2;
+	// L2.value = "837";
+	// LongNatural L3;
+	// L3.value = L1 + L2;
 
 	graph test01;
 	auto cut01 = MinCut(test01);
+
+	auto testtree = BSTree<int>({1, 3});
+	auto testval = testtree[1].value;
+	testtree.insert({2, 7});
 
 	return 0;
 }

@@ -526,7 +526,29 @@ Idea: Asegurarse que el árbol sea balanceado, manteniendo la altura en $O(\log 
 
 ### Invariantes
 
-1) Cada nodo es rojo o negro (tinyint).
+1) Cada nodo es rojo o negro.
 2) La raíz siempre es negra.
 3) Nunca hay dos rojos de corrido (i.e. los hijos de un rojo tienen que ser negros, y el padre de un rojo siempre es negro).
 4) Todos los recorridos de raíz a nullptr (i.e. búsquedas fallidas) pasan por la misma cantidad de nodos negros.
+
+# Hash Tables
+
+Sirven para mantener un conjunto (arbitrario) de cosas, accesibles en tiempo constante a través de "claves" que otherwise *no* están ordenadas. Soporta Insert, Delete y Lookup en $O(1)$, si está bien implementada y no contiene datos patológicos.
+
+### Uso: Remover Duplicados
+
+Input: stream de objetos.
+
+Solución: Buscar objeto nuevo en tabla. Si no está agregarlo.
+
+### Problema de 2-Sumas
+
+Input: Array desordenado $A$ de $n$ enteros. Suma objetivo $t$.
+
+Objetivo: Determinar si hay $x,y\in A : x+y=t$
+
+Con lo que sabemos hasta ahora se puede hacer en $O(n \log n)$: Ordenar $A$; buscar $t-x$ por búsqueda binaria en $A$; iterar $x$ hasta encontrar un $t-x$ válido.
+
+Con Hash Tables: Insertar elementos de $A$ en tabla $H$; Buscar $t-x$ en $H$ por cada $x$ en $A$. $O(n)$.
+
+## Implementación
