@@ -469,6 +469,21 @@ Realizar computaciones mínimas repetidas.
 - Objetos = registros de eventos (acción que ocurrirá en el futuro)
 - clave: Tiempo en el que debe ocurrir
 
+## Implementación
+
+Pensado como arbol: binario, con raíz, y *lo más completo posible*. En cada nodo x, x.key es (igual o) menor a todos los hijos de x. Implementado como array, el padre de un nodo $i$ es $floor(i/2)$, y sus hijos son $2i$ y $2i+1$.
+
+### Insert
+
+1) Insertar clave nueva $k$ al final del último nivel. Si la clave es mayor al padre, se mantiene el Heap.
+2) Si no, hay que hacer enroques hasta llevar a $k$ a una posición donde se mantenga la propiedad ("Bubble-up").
+
+### Extract-min
+
+1) Eliminar raíz.
+2) Hacer última hoja nueva raíz.
+3) Hacer enroques con el hijo más pequeño hasta llevar la nueva raíz a donde se mantenga la propiedad ("Bubble-down").
+
 # Balanced Binary Search Trees
 
 ## Operaciones
@@ -520,6 +535,15 @@ Idea: Almacenar data extra sobre el árbol en cada nodo.
 
 Ejemplo: $size(x) = \#$ de nodos árbol en el subárbol con raíz $x$. Si $x$ tiene hijos $y,z \Rightarrow size(x) = y+z+1$. Nota: hay que mantener los valores cada vez que se realiza una operación de Insert o Delete.
 
+### Rotaciones
+
+Objetivo: rebalancear un subarbol localmente en tiempo constante. A nivel primitivo, queremos intercambiar un nodo x con un hijo y.
+
+Rotación izquierda (padre $x$, hijo derecho $y$, subarbol izquierdo $A$, subarboles de y $B,C$):  
+- $A < x < y$, $C > y > x$, $x < B < y
+- Al intercambiar y con x, hacemos a x hijo izquierdo de y
+- Dejar $A$ como árbol izq de $x$, hacer $B$ árbol derecho, dejar $C$ como árbol derecho de $y$.
+
 ## Red-Black Tree
 
 Idea: Asegurarse que el árbol sea balanceado, manteniendo la altura en $O(\log n)$, lo que mantiene varias de las operaciones logarítmicas. Ejemplo: Árboles rojo-negro [Bayer, 1972]. Todo árbol rojo-negro con $n$ nodos cumple $h\leq 2\log_2(n+1)$ (ver también árboles AVL, splaytrees, B trees y B+ trees para DBD).
@@ -545,10 +569,90 @@ Solución: Buscar objeto nuevo en tabla. Si no está agregarlo.
 
 Input: Array desordenado $A$ de $n$ enteros. Suma objetivo $t$.
 
-Objetivo: Determinar si hay $x,y\in A : x+y=t$
+Objetivo: Determinar si hay $\exists x,y\in A : x+y=t$
 
 Con lo que sabemos hasta ahora se puede hacer en $O(n \log n)$: Ordenar $A$; buscar $t-x$ por búsqueda binaria en $A$; iterar $x$ hasta encontrar un $t-x$ válido.
 
 Con Hash Tables: Insertar elementos de $A$ en tabla $H$; Buscar $t-x$ en $H$ por cada $x$ en $A$. $O(n)$.
 
 ## Implementación
+
+Primer paso: Identificar el universo $U$ del problema (e.g. todas las direcciones de IP, todos los nombres de hasta x caracteres, todas las configuraciones de ajedrez posibles, etc.). Nuestra Hash table va a matener un subconjunto expandible de $S \subseteq U$.
+
+Soluciones ingenuas:
+
+1) Array indexado por $U$: Operaciones en $O(1)$ pero espacio $O (|U|)$.
+2) Lista: Espacio $O(|S|)$, pero búsqueda $O(|S|)$.
+
+Solución:
+
+1) Elegir n = # de baldes con $n\simeq |S|$ (asumimos que $|S|$ no varía mucho, o varía por un factor constante).
+2) Elegir una función hash $h:U\rightarrow \{0,1,2,...,n-1\}$
+3) Usando array $A$ de largo $n$, almacenar $x$ en $A[h(x)]$.
+  
+### Resolver colisiones
+
+1) Encadenamiento (separado): Revertir a listas para desambiguar colisiones. Cada balde contiene una lista en lugar de un sólo valor. Hacemos insert/delete/search en A[h(x)]
+
+   - Insert es $O(1)$
+   - Lookup/Delete es $O(m)$, donde m es el largo de la lista.
+   - Performance depende de qué tan buena sea la función hash (también en addressing abierto).
+2) Addressing abierto: Un sólo objeto por balde. Si está ocupado, avanzar secuencia hasta encontrar posición abierta (linear probing) o crear segunda función hash, donde la segunda es un offset de la primera (doble hashing).
+
+## Función Hash
+
+Una buena función hash esparce los datos de la materia más equitativa posible, para que encadenamiento tenga listas de largo similar, y open addressing itere lo menos posible.
+
+### Malos hashes
+
+1) Código de area para almacenar números de telefono (códigos de zonas urbanas muy llenos, y de áreas rurales muy vacíos).
+2) Últimos tres digitos de números de teléfono (aún vulnerable a patrones en los últimos tres digitos).
+3) $h(x) = x\mod{1000}$ para almacenar ubicaciones en memoria (todos los baldes impares van a estar vacíos, porque las direcciones de memoria son múltiplos de $2^n$.)
+
+### Hashes sencillos
+
+1) Objeto no-númerico
+2) Transformarlo en enteros ("hash code").
+3) Mapearlo a un índice más pequeño de un hash map ("Función compresión").
+
+### Cómo elegir n° de baldes
+1) Elegir $n$ primo (dentro del factor constante del # de objetos en la tabla).
+2) No muy cerca de una potencia de 2 o 10.
+
+## Hashing Universal
+
+La carga (load factor) de una hash table es $\alpha \coloneqq \frac{\text{objetos en la tabla}}{\text{\# baldes}}$. En open adressing, $\alpha$ tiene que ser $\leq 1$, pero también en chaining tiene que ser lo menor posible para mantener las operaciones en $O(1)$.
+
+Dado que no podemos controlar los objetos que ingrese el usuario, implementamos una hash table donde el número de baldes crece con la cantidad de objetos (e.g. duplicar baldes al pasar 75% de capacidad, y opcionalmente encojerla si decrece).
+
+Dada una función hash, siempre hay un conjunto patológico que resulta en operaciones lo más lentas posible. Por lo tanto no hay hash function universal (ver Crosby y Wallach, USENIX 2003).
+
+### Soluciones para datasets patológicos
+
+1) Usar una función hash criptográfica (e.g. SHA-2). Si bien existe un conjunto patológico posible, no es viable calcularlo por ingeniería inversa.
+2) Randomizar función hash: creamos una familia de hash functions, y en runtime elegimos una al azar para una hash table dada.
+
+## Familia de Funciones Hash Universal
+
+## Chaining
+
+## Open Addressing
+
+# Filtros de Bloom
+
+Pros:
+- Mejor uso de espacio.
+   
+Contras:
+- No almacenan objetos asociados.
+- Tradicionalmente no tienen delete()
+- Pequeña probabilidad de falsos positivos.
+
+## Implementación
+
+1) Array de n bits (# de bits por objeto en dataset $S= \frac{b}{|S|}$)
+2) $k$ funciones hash (O 2, + $k$ combinaciones lineales de esas 2)
+
+Falsos negativos: No hay. Los bits nunca se resetean a 0.
+
+Falsos positivos: Sí, cuando dos keys dan el mismo hash.

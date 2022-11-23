@@ -11,7 +11,7 @@
 #include <algorithm>
 //#include <tarea.hpp>
 #include <assert.h>
-
+#include <optional>
 // Semana 1 ------------------------------------------------------------------
 
 // typedef std::string LongNatural;
@@ -312,8 +312,8 @@ struct node
 	}
 };
 // typedef std::string node;
-typedef std::vector<node> adjacent;
-typedef std::map<node, adjacent> graph;
+using adjacent = std::vector<node>;
+using graph = std::map<node, adjacent>;
 
 graph RContraction(const graph &G)
 {
@@ -388,8 +388,8 @@ struct node2
 	bool explorado;
 };
 // typedef std::string node;
-typedef std::vector<node2 *> adjacent2;
-typedef std::map<node2 *, adjacent2> graph2;
+using adjacent2 = std::vector<node2 *>;
+using graph2 = std::map<node2 *, adjacent2>;
 
 void BusquedaA(graph2 &G, node2 &s)
 {
@@ -505,20 +505,71 @@ TODO
 	- Red-Black Tree
 	- Insert y Rotations en RBT
 */
+template <class T>
+class Heap
+{
+private:
+	std::deque<T> val;
+
+public:
+	T operator[](const int k)
+	{
+		return this->val[k];
+	}
+	void insert(T i)
+	{
+		this->val.push_back(i);
+		while (i < (*this)[floor(i / 2)])
+		{
+			T swapperino = i;
+			(*this)[this->val.size()] = (*this)[floor(i / 2)];
+			(*this)[floor(i / 2)] = swapperino;
+			i = (*this)[floor(i / 2)];
+		}
+		return;
+	};
+	T extractMin()
+	{
+		T output = (*this)[0];
+		(*this)[0] = (*this)[this->val.size()];
+		this->val.pop_back();
+
+		int i = 0;
+		while (this->val.size() > i * 2 + 1)
+		{
+			// NOOOOO -.-
+			if ((*this)[i] > (*this)[i * 2 + 1])
+			{
+				T swapperino = (*this)[i];
+				(*this)[i] = (*this)[i * 2];
+				(*this)[i * 2] = swapperino;
+				i = i * 2;
+			}
+		}
+
+		return output;
+	};
+	// void heapify();
+	// void delete();
+};
 
 template <class T>
 class MediansHeap
 {
 private:
-	struct Heap
-	{
-	};
+	class Heap;
 };
 
 enum color
 {
-	red,
-	black
+	RED,
+	BLACK
+};
+
+enum DIR_ROT
+{
+	LEFT,
+	RIGHT
 };
 
 template <class T>
@@ -532,10 +583,10 @@ private:
 		BSNode *parent;
 		BSNode *left = nullptr;
 		BSNode *right = nullptr;
-		// color c;
 	};
-	void crear_nodo_vacio(BSNode &n)
+	void inicializar_nodo_vacio(BSNode &n)
 	{
+		// NULL?¿
 		auto empty_left = new BSNode{
 			parent : &n
 		};
@@ -550,30 +601,29 @@ private:
 	BSNode *m_root = nullptr;
 
 public:
-	// Insertar
 	BSTree()
 		: m_root{new BSNode{}}
 	{
-		crear_nodo_vacio(*m_root);
+		inicializar_nodo_vacio(*m_root);
 	}
-	BSTree(std::pair<int, T> n)
+	BSTree(const std::pair<int, T> &n)
 		: m_root{new BSNode{key : n.first, value : n.second}}
 	{
-		crear_nodo_vacio(*m_root);
+		inicializar_nodo_vacio(*m_root);
 	}
 
-	void insert(std::pair<int, T> n)
+	void insert(const std::pair<int, T> &n)
 	{
-		BSNode &new_node = this[n.first]; // :$
+		BSNode *new_node = (*this)[n.first]; // :S [X]
 
-		new_node.key = n.first;
-		new_node.value = n.second;
+		new_node->key = n.first;
+		new_node->value = n.second;
 
-		crear_nodo_vacio(new_node);
+		inicializar_nodo_vacio(*new_node);
 
 		return;
 	}
-	void remove(int k)
+	void remove(const int k)
 	{
 		BSNode result = this[k];
 		if (result.left == nullptr && result.right == nullptr)
@@ -592,48 +642,51 @@ public:
 
 		return;
 	}
-	// cuenta un orden de más :/ porque no usé iterators
-	int size(int k)
+	int size(const int k)
 	{
-		BSNode s = this[k];
+		BSNode s = *(*this)[k];
 		int left = s.left != nullptr ? size((s.left)->key) : 0;
 		int right = s.right != nullptr ? size((s.right)->key) : 0;
-		return left + right + 1;
+		return s.key != 0 ? left + right + 1 : left + right;
 	}
 
-	// Busqueda O(log n)
-	BSNode operator[](int i)
+	BSNode *operator[](const int i)
 	{
-		BSNode output = *m_root;
-		while (output.key != i && output.key != 0)
+		BSNode *output = m_root;
+		while (output->key != i && output->key != 0)
 		{
-			output = output.key < i ? *(output.left) : *(output.right);
+			output = output->key < i ? output->right : output->left;
 		}
 
 		return output;
 	};
 
-	// Mejorar
-	BSNode min(int k)
+	BSNode min(const int k)
 	{
-		BSNode output = this[k];
-		while (output.left != nullptr)
+		BSNode *output = (*this)[k];
+		// horrible
+		// key != NULL deberia ser right != .end()
+		// update: esto anda pero igual es horrible
+		while (output->left->key != 0)
 		{
-			output = *(output.left);
+			output = output->left;
 		}
-		return output;
+		return *output;
 	}
-	BSNode max(int k)
+	BSNode max(const int k)
 	{
-		BSNode output = this[k];
-		while (output.right != nullptr)
+		BSNode *output = (*this)[k];
+		// horrible
+		// key != NULL deberia ser right != .end()
+		// update: esto anda pero igual es horrible
+		while (output->right->key != 0)
 		{
-			output = *(output.right);
+			output = output->right;
 		}
-		return output;
+		return *output;
 	}
 
-	BSNode prev(int k)
+	BSNode prev(int k) // Hacer metodo de BSNode ?¿
 	{
 		BSNode s = *(this[k]);
 		if (s.left != nullptr || s.right != nullptr)
@@ -645,27 +698,48 @@ public:
 		{
 			if (output.parent == nullptr)
 			{
-				return s; // devolver error
+				throw "No hay anterior";
 			}
 			output = *(output.parent);
 		}
+		return output;
 	}
 	BSNode next(int k)
 	{
 		BSNode s = *(this[k]);
 		if (s.right != nullptr || s.left != nullptr)
 		{
-			return this.max(s.right->key); // revisar logica
+			return this->max(s.right->key); // todo
 		}
 		BSNode output = s;
 		while (output.key >= k)
 		{
 			if (output.parent == nullptr)
 			{
-				return s; // devolver error
+				throw "No hay siguiente";
 			}
 			output = *(output.parent);
 		}
+		return output;
+	}
+
+	void rotate(BSNode &x, DIR_ROT r)
+	{
+		BSNode *y = r == LEFT ? x.right : x.left;
+		y->parent = x.parent;
+		x.parent = y;
+		BSNode *B = r == LEFT ? y->left : y->right;
+		if (r == LEFT)
+		{
+			y->left = &x; // pointer de referencia?¿?¿
+			x.right = B;
+		}
+		else
+		{
+			y->right = &x; // same
+			x.left = B;
+		}
+		return;
 	}
 };
 
@@ -677,6 +751,95 @@ TODO
 	- Bloom Filter
 	- 2-SUM algorithm
 */
+enum TIPO
+{
+	OADDRESS,
+	CHAIN
+};
+template <class K, class V>
+class HashTable
+{
+private:
+	// std::pair<K, V> registro;
+	std::vector<std::vector<std::pair<K, V>>> balde;
+	TIPO t;
+	int used = 0;
+
+	void resize()
+	{
+		int current = this->balde.size();
+		this->balde.resize(current * 2);
+		return;
+	}
+
+public:
+	HashTable(const int &n, const TIPO &tipo)
+	{
+		t = tipo;
+		this->balde.resize(n);
+	};
+
+	~HashTable(){};
+
+	int hashear(K k)
+	{
+		int h;
+		return h;
+	}
+
+	V &operator[](const K &k)
+	{
+		int h = hashear(k);
+		for (auto it = this->balde[h].begin(); it < this->balde[h].end(); ++it)
+		{
+			if (it->first == k)
+			{
+				return it->second;
+			}
+		}
+		this->insert(k, "");
+		return (*this)[k]; // mmmhh
+	}
+
+	void insert(const K &k, const V &v)
+	{
+		++(this->used);
+		if (this->used > this->balde.size() * 0.7)
+		{
+			this->resize();
+		}
+
+		int h = this->hashear(k);
+		if (this->balde[h].empty() || t == CHAIN)
+		{
+			this->balde[h].push_back({k, v});
+		}
+		else
+		{
+			int iter = h + 1;
+			while (!this->balde[iter].empty())
+			{
+				++iter;
+			}
+			this->balde[iter].push_back({k, v});
+		}
+		return;
+	}
+
+	void pop(const K &k)
+	{
+		int h = this->hashear(k);
+		for (auto it = this->balde[h].begin(); it < this->balde[h].end(); ++it)
+		{
+			if (it->first == k)
+			{
+				this->balde[h].erase(it); // no?¿
+				return;
+			}
+		}
+		throw("Clave %s no existe", k);
+	};
+};
 
 int main()
 {
@@ -693,9 +856,26 @@ int main()
 	graph test01;
 	auto cut01 = MinCut(test01);
 
-	auto testtree = BSTree<int>({1, 3});
-	auto testval = testtree[1].value;
-	testtree.insert({2, 7});
+	auto testtree = BSTree<std::string>({5, "perro"});
+	testtree.insert({9, "gato"});
+	testtree.insert({2, "rata"});
+	testtree.insert({6, "caballo"});
+	auto testmax = testtree.max(9);
+	auto testval = testtree[6]->value; // crear getter?¿?¿
+
+	auto testhash = HashTable<std::string, std::string>(200, CHAIN);
+	// testhash.insert("juan", "PERRO");
+	// testhash.insert("miguel", "GATO");
+	try
+	{
+		testhash.pop("maria");
+	}
+	catch (const std::exception &e)
+	{
+		std::cerr << e.what() << '\n';
+	}
+
+	// auto asdasd = std::vector<int>{2,3};
 
 	return 0;
 }
