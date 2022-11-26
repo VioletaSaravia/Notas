@@ -710,4 +710,34 @@ Objetivo: minimizar la suma pesada de los tiempo de compleción: $min(\sum_{j=1}
 
 Idea: Asignar un único "puntaje" a cada tarea usando $w$ y $j$. Funciones posibles: $w-l,\frac{w}{l}$. Rompemos empates de manera arbitraria.
 
-# Algoritmo MST de Prim
+# Minimum-Spanning Trees
+
+Objetivo: Conectar puntos juntos de la manera más barata posible. Usado en clustering, networking. Varias soluciones voraces que corren en $O(m \log n)$, donde $m$ es el número de aristas y $n$ de vertices.
+
+## Definición
+
+Input: Grafo **no-dirigido** $G=(V,E)$, y un costo $c_e\forall e\in E$ (asumimos que son distintos, aunque Prim y Kruskal son válidos con empates, que se pueden romper al azar), representados como lista de adyacencia. Las aristas pueden ser negativas. Asumimos que $G$ es conectado (fácil de chequear).
+
+Output: Arbol de costo menor $T\subseteq E$ que abarca todos los vértices. Es decir, $T$ no tiene ciclos y todo subgrafo $(V,T)$ está conectado (contiene camino entre cada par de vértices).
+
+## Algoritmo de Prim
+
+```
+let x<vertices> = [v[rand() % mod v.size()]]
+let arbol T = []
+while x != v:
+  for e in E:
+    let next = (menor) e<u,v> if x.contains(u) && !x.contains(v)
+  T += next
+  x += next.v
+```
+
+Idea 1: Usar heap para almacenar aristas, $O(m\log n)$.
+
+Idea 2: Poner vertices de $v-x$ en heap. En lugar de facilitar al arista mínima, facilitamos encontrar el siguiente vértice para agregar. $O(m\log n)$ con mejores constantes.
+
+### Implementación
+
+Implementación ingenua: $O(m\cdot n)$ (+1 vertice por loop, iterando todos los edges por loop).
+
+## Algoritmo de Kruskal

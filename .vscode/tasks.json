@@ -9,7 +9,14 @@
                 "-g",
                 "${file}",
                 "-o",
-                "${fileDirname}/${fileBasenameNoExtension}"
+                "${fileDirname}/${fileBasenameNoExtension}",
+                //"-pedantic-errors",
+                "-Wall",
+                "-Weffc++",
+                //"-Wextra",
+                //"-Wsign-conversion",
+                "-Werror",
+                "-std=c++20"
             ],
             "options": {
                 "cwd": "${fileDirname}"

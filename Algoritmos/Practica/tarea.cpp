@@ -14,96 +14,127 @@
 #include <optional>
 // Semana 1 ------------------------------------------------------------------
 
-// typedef std::string LongNatural;
-struct LongNatural
+using LongNatural = std::string;
+
+LongNatural operator+(LongNatural &lhs, const LongNatural &rhs)
 {
-	std::string value;
+	auto rindex = rhs.end() - 1;
+	auto lindex = lhs.end() - 1;
+	int leftover = 0;
+	int tempOut;
+	std::string output;
 
-	std::string operator+(LongNatural const &rhs) const
+	while (rindex != rhs.begin() || leftover != 0) // mmm !=??
 	{
-		auto rindex = size(rhs.value) - 1;
-		auto lindex = size(this->value) - 1;
-		int leftover = 0;
-		int tempOut;
-		std::string output;
-
-		while (rindex >= 0 || leftover != 0)
+		int rvalue = int(*rindex) - 48;
+		int lvalue = int(*lindex) - 48;
+		tempOut = lvalue + rvalue + leftover;
+		leftover = 0;
+		if (tempOut > 9)
 		{
-			auto rvalue = rhs.value[rindex];
-			auto lvalue = this->value[lindex];
-			tempOut = int(lvalue) + int(rvalue) + leftover;
-			if (tempOut > 9)
-			{
-				leftover = tempOut / 10;
-				tempOut = tempOut % 10;
-			}
-			// lists > strings? :?
-			output += std::to_string(tempOut);
-
-			--rindex;
-			--lindex;
-			// leftover = 0;
+			leftover = tempOut / 10;
+			tempOut = tempOut % 10;
 		}
+		output.insert(output.begin(),tempOut);
 
-		return output;
+		--rindex;
+		--lindex;
 	}
+	return output;
+}
 
-	// etc.
-	LongNatural operator-(LongNatural const &rhs) const
-	{
-		auto rdigit = rhs.value.end();
-		auto ldigit = this->value.end();
-		int leftover = 0;
-		int tempOut;
-		LongNatural output;
+// 	return output;
+// }
 
-		while (rdigit >= rhs.value.begin() || leftover != 0)
-		{
-			tempOut = std::atoi(&*ldigit) - std::atoi(&*rdigit) + leftover;
-			if (tempOut > 9)
-			{
-				leftover = tempOut / 10;
-				tempOut = tempOut % 10;
-			}
-			// lists > strings? :?
-			output.value.insert(output.value.begin(), tempOut);
+// struct LongNatural
+// {
+// 	std::string value;
 
-			--rdigit;
-			--ldigit;
-			leftover = 0;
-		}
+// 	std::string operator+(LongNatural const &rhs) const
+// 	{
+// 		auto rindex = size(rhs.value) - 1;
+// 		auto lindex = size(this->value) - 1;
+// 		int leftover = 0;
+// 		int tempOut;
+// 		std::string output;
 
-		return output;
-	}
+// 		while (rindex >= 0 || leftover != 0)
+// 		{
+// 			auto rvalue = rhs.value[rindex];
+// 			auto lvalue = this->value[lindex];
+// 			tempOut = int(lvalue) + int(rvalue) + leftover;
+// 			if (tempOut > 9)
+// 			{
+// 				leftover = tempOut / 10;
+// 				tempOut = tempOut % 10;
+// 			}
+// 			// lists > strings? :?
+// 			output += std::to_string(tempOut);
 
-	// Cambiar por karatsuba
-	LongNatural operator*(LongNatural const &rhs) const
-	{
-		auto rdigit = rhs.value.end();
-		auto ldigit = this->value.end();
-		int leftover = 0;
-		int tempOut;
-		LongNatural output;
+// 			--rindex;
+// 			--lindex;
+// 			// leftover = 0;
+// 		}
 
-		while (rdigit >= rhs.value.begin() || leftover != 0)
-		{
-			tempOut = std::atoi(&*ldigit) * std::atoi(&*rdigit) + leftover;
-			if (tempOut > 9)
-			{
-				leftover = tempOut / 10;
-				tempOut = tempOut % 10;
-			}
-			// lists > strings? :?
-			output.value.insert(output.value.begin(), tempOut);
+// 		return output;
+// 	}
 
-			--rdigit;
-			--ldigit;
-			leftover = 0;
-		}
+// 	// etc.
+// 	LongNatural operator-(LongNatural const &rhs) const
+// 	{
+// 		auto rdigit = rhs.value.end();
+// 		auto ldigit = this->value.end();
+// 		int leftover = 0;
+// 		int tempOut;
+// 		LongNatural output;
 
-		return output;
-	}
-};
+// 		while (rdigit >= rhs.value.begin() || leftover != 0)
+// 		{
+// 			tempOut = std::atoi(&*ldigit) - std::atoi(&*rdigit) + leftover;
+// 			if (tempOut > 9)
+// 			{
+// 				leftover = tempOut / 10;
+// 				tempOut = tempOut % 10;
+// 			}
+// 			// lists > strings? :?
+// 			output.value.insert(output.value.begin(), tempOut);
+
+// 			--rdigit;
+// 			--ldigit;
+// 			leftover = 0;
+// 		}
+
+// 		return output;
+// 	}
+
+// 	// Cambiar por karatsuba
+// 	LongNatural operator*(LongNatural const &rhs) const
+// 	{
+// 		auto rdigit = rhs.value.end();
+// 		auto ldigit = this->value.end();
+// 		int leftover = 0;
+// 		int tempOut;
+// 		LongNatural output;
+
+// 		while (rdigit >= rhs.value.begin() || leftover != 0)
+// 		{
+// 			tempOut = std::atoi(&*ldigit) * std::atoi(&*rdigit) + leftover;
+// 			if (tempOut > 9)
+// 			{
+// 				leftover = tempOut / 10;
+// 				tempOut = tempOut % 10;
+// 			}
+// 			// lists > strings? :?
+// 			output.value.insert(output.value.begin(), tempOut);
+
+// 			--rdigit;
+// 			--ldigit;
+// 			leftover = 0;
+// 		}
+
+// 		return output;
+// 	}
+// };
 
 template <class T>
 std::vector<T> MergeSort(const std::vector<T> &l) // TODO: void MergeSort()
@@ -320,8 +351,8 @@ graph RContraction(const graph &G)
 	auto output = G;
 	for (auto size_out = output.size(); size_out > 2; size_out = output.size())
 	{
-		auto u = std::next(std::begin(output), rand() % output.size());
-		auto v = *(u->second.begin() + (rand() % size(u->second)));
+		auto u = std::next(std::begin(output), rand() % int(output.size()));
+		auto v = *(u->second.begin() + (rand() % int(size(u->second))));
 		for (node w : output[v])
 		{
 			if (w != u->first)
@@ -382,18 +413,17 @@ graph MinCut(const graph &G)
 
 // Semana 5 ------------------------------------------------------------------
 
+// using node = std::string;
 struct node2
 {
 	std::string label;
 	bool explorado;
 };
-// typedef std::string node;
 using adjacent2 = std::vector<node2 *>;
 using graph2 = std::map<node2 *, adjacent2>;
 
 void BusquedaA(graph2 &G, node2 &s)
 {
-	// std::vector<std::string> exp;
 	std::deque<node2 *> Q = {&s};
 
 	// O(n_s)
@@ -435,7 +465,7 @@ void BusquedaP(graph2 &G)
 	{
 		n.first->explorado = false;
 	}
-	auto current_label = size(G);
+	//auto current_label = size(G);
 
 	for (auto v : G)
 	{
@@ -497,14 +527,6 @@ struct Graph
 
 // Semana 7 ------------------------------------------------------------------
 
-/*
-TODO
-	- Heaps
-	- Median maintenance
-	- Binary Search Tree
-	- Red-Black Tree
-	- Insert y Rotations en RBT
-*/
 template <class T>
 class Heap
 {
@@ -551,19 +573,6 @@ public:
 	};
 	// void heapify();
 	// void delete();
-};
-
-template <class T>
-class MediansHeap
-{
-private:
-	class Heap;
-};
-
-enum color
-{
-	RED,
-	BLACK
 };
 
 enum dir
@@ -649,9 +658,9 @@ public:
 	}
 	int size(const int k)
 	{
-		BSNode<T> s = *(*this)[k];
-		int left = s.left != nullptr ? size((s.left)->key) : 0;
-		int right = s.right != nullptr ? size((s.right)->key) : 0;
+		BSNode<T> s = *((*this)[k]);
+		int left = s.left != nullptr ? size(s.left->key) : 0;
+		int right = s.right != nullptr ? size(s.right->key) : 0;
 		return s.key != 0 ? left + right + 1 : left + right;
 	}
 
@@ -669,9 +678,6 @@ public:
 	BSNode<T> min(const int k)
 	{
 		BSNode<T> *output = (*this)[k];
-		// horrible
-		// key != NULL deberia ser right != .end()
-		// update: esto anda pero igual es horrible
 		while (output->left->key != 0)
 		{
 			output = output->left;
@@ -681,9 +687,6 @@ public:
 	BSNode<T> max(const int k)
 	{
 		BSNode<T> *output = (*this)[k];
-		// horrible
-		// key != NULL deberia ser right != .end()
-		// update: esto anda pero igual es horrible
 		while (output->right->key != 0)
 		{
 			output = output->right;
@@ -691,7 +694,7 @@ public:
 		return *output;
 	}
 
-	BSNode<T> prev(int k) // Hacer metodo de BSNode ?¿
+	BSNode<T> prev(int k)
 	{
 		BSNode<T> s = *(this[k]);
 		if (s.left != nullptr || s.right != nullptr)
@@ -736,12 +739,12 @@ public:
 		BSNode<T> *B = r == LEFT ? y->left : y->right;
 		if (r == LEFT)
 		{
-			y->left = &x; // pointer de referencia?¿?¿
+			y->left = &x;
 			x.right = B;
 		}
 		else
 		{
-			y->right = &x; // same
+			y->right = &x;
 			x.left = B;
 		}
 		return;
@@ -766,13 +769,13 @@ class HashTable
 {
 private:
 	// std::pair<K, V> registro;
-	std::vector<std::vector<std::pair<K, V>>> balde;
+	std::vector<std::vector<std::pair<K, V>>> balde {};
 	TIPO t;
 	int used = 0;
 
 	void resize()
 	{
-		int current = this->balde.size();
+		auto current = this->balde.size();
 		this->balde.resize(current * 2);
 		return;
 	}
@@ -784,13 +787,13 @@ private:
 		{
 			h += int(c);
 		}
-		h = h % this->balde.size();
+		h = h % int(this->balde.size());
 
 		return h;
 	}
 
 public:
-	HashTable(const int &n, const TIPO &tipo) : t{tipo}
+	HashTable(unsigned int n, const TIPO &tipo) : t{tipo}
 	{
 		this->balde.resize(n);
 	};
@@ -799,7 +802,7 @@ public:
 
 	V &operator[](const K &k)
 	{
-		int h = hashear(k);
+		auto h = hashear(k);
 		for (auto it = this->balde[h].begin(); it < this->balde[h].end(); ++it)
 		{
 			if (it->first == k)
@@ -848,11 +851,11 @@ public:
 		{
 			if (it->first == k)
 			{
-				this->balde[h].erase(it); // no?¿
+				this->balde[h].erase(it);
 				return;
 			}
 		}
-		throw("Clave %s no existe", k);
+		throw("Clave no existe");
 	};
 };
 
@@ -862,14 +865,19 @@ public:
 // First: peso, second: largo
 // Opción 2) Crear subaliases
 // Cómo peakear def de subaliases con 2)?
-using peso = int;
-using largo = int;
-using tarea = std::pair<peso, largo>;
+// using peso = int;
+// using largo = int;
+// using tarea = std::pair<peso, largo>;
+
+struct tarea
+{
+	int peso, largo;
+};
 
 class Scheduler
 {
 private:
-	std::vector<tarea> schedule;
+	std::vector<tarea> schedule {};
 
 public:
 	Scheduler(){};
@@ -878,12 +886,12 @@ public:
 
 	void add(const tarea &t)
 	{
-		int s = t.first / t.second;
+		int s = t.peso / t.largo;
 		auto it = schedule.begin();
 		while (it != schedule.end())
 		{
 			// desempates al final
-			if (s < (it->first / it->second))
+			if (s < (it->peso / it->largo))
 			{
 				++it;
 			}
@@ -897,7 +905,7 @@ public:
 	// variadic -.-'
 	void add(std::vector<tarea> &t)
 	{
-		//std::for_each(t.begin(), t.end(), add);
+		// std::for_each(t.begin(), t.end(), add);
 		for (auto a : t)
 		{
 			add(a);
@@ -905,17 +913,34 @@ public:
 	}
 };
 
+// template <class T>
+// T PrimMST(const T &t)
+// {
+// 	std::vector<int> x = t.vert[rand() % t.size()];
+// 	T output;
+// 	t.edge.sort();
+// 	while (x != t.vert)
+// 	{
+// 		for (auto e : t.edge)
+// 		{
+// 			if (x.contains(e.first) && !x.contains(e.second))
+// 			{
+// 				output.add_edge(e);
+// 				x.push_back(e.second);
+// 			}
+// 		}
+// 	}
+// 	return output;
+// }
+
 int main()
 {
 	std::vector<int> sortEx = {5, 4, 1, 8, 7, 2, 6, 3, 9};
 	QuickSort(sortEx, sortEx.begin(), sortEx.end()); // type inferrence
 
-	// LongNatural L1;
-	// L1.value = "12345";
-	// LongNatural L2;
-	// L2.value = "837";
-	// LongNatural L3;
-	// L3.value = L1 + L2;
+	LongNatural L1 {"12345"};
+	LongNatural L2 {"837"};
+	LongNatural L3 = L1 + L2;
 
 	graph test01;
 	auto cut01 = MinCut(test01);
