@@ -294,10 +294,10 @@ public:
 	}
 };
 
-template <class T>
-graph<T> graph::mst_prim()
-{
-}
+// template <class T>
+// graph<T> graph::mst_prim()
+// {
+// }
 
 int main()
 {
@@ -315,6 +315,7 @@ int main()
 	test01.add_vert("roberto");
 	test01.add_vert("maria");
 	test01.add_edge(2, "juan", "maria");
+	// graph<std::string> test01_prim = test01.mst_prim();
 	// auto cut01 = test01.mincut();
 
 	auto testtree = BSTree<std::string>({5, "perro"});

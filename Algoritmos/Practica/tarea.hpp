@@ -1,5 +1,7 @@
 #include <vector>
 #include <string>
+#include <algorithm>
+#include <type_traits>
 
 enum dir
 {
@@ -188,7 +190,6 @@ class HashTable
 private:
 	std::vector<std::vector<std::pair<K, V>>> balde{};
 	TIPO t;
-	int used = 0;
 
 	void resize()
 	{
@@ -210,6 +211,7 @@ private:
 	}
 
 public:
+	int used = 0;
 	HashTable(const TIPO &tipo) : t{tipo}
 	{
 		this->balde.resize(11);
@@ -231,6 +233,7 @@ public:
 				return it->second;
 			}
 		}
+		// PIASUHDFOIALUWHDPIZSUDH
 		// this->insert(k, std::string{""});
 		return (*this)[k]; // mmmhh
 	}
@@ -274,6 +277,17 @@ public:
 		}
 		throw("Clave no existe");
 	};
+
+	std::pair<K, V> rand()
+	{
+		auto rand_balde = std::next(
+			this->balde.begin(),
+			std::rand() % this->balde.size() - 1);
+
+		return *std::next(
+			(*rand_balde).begin(),
+			std::rand() % (*rand_balde).size() - 1);
+	}
 };
 
 enum edge_dir
@@ -291,6 +305,46 @@ private:
 	HashTable<T, vert> vertices{CHAIN};
 	std::vector<edge *> edges{};
 	edge_dir is_dir = undirected;
+	bool is_cycle = false;
+
+	bool creates_cycle(edge *e)
+	{
+		// O(m)
+		// Si no almacenara edges, podría hacer esto con BFS en O(n)
+		for (edge *m : this->edges)
+		{
+			if (m->left == e->left && m->right == e->right)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	void update_lider(T l, T r)
+	{
+		vert *vert_l = (*this)[l];
+		vert *vert_r = (*this)[r];
+
+		// Se rompe si uno de los vers justo es el lider.
+		// Usar empty init para vert.lider
+		if (vert_l->lider == vert_l->val && vert_r->lider == vert_r->val)
+		{
+			vert_l->lider = vert_r->val;
+		}
+		else if (vert_l->lider == vert_l->val && vert_r->lider != vert_r->val)
+		{
+			vert_l->lider = vert_r->lider;
+		}
+		else if (vert_l->lider != vert_l->val && vert_r->lider == vert_r->val)
+		{
+			vert_r->lider = vert_l->lider;
+		}
+		else
+		{
+			// TODO
+		}
+	}
 
 public:
 	graph(edge_dir d) : is_dir{d} {};
@@ -311,7 +365,11 @@ public:
 	// TODO: vert_exists checks
 	void add_edge(int w, T l, T r)
 	{
+		// TODO: no raw pointers
 		auto new_edge = new edge{w, l, r};
+		// is_cycle = this->creates_cycle(new_edge); // no anda
+		this->update_lider(l, r);
+
 		this->edges.push_back(new_edge);
 		this->vertices[l].edges.push_back(*(edges.end() - 1));
 		if (!is_dir)
@@ -333,24 +391,76 @@ public:
 	std::vector<T> shortest_path(T from, T to);
 	std::vector<T> BusquedaP();
 	std::vector<T> BusquedaA();
-	graph mst_prim();
+
+	graph<T> mst_prim()
+	{
+		std::pair<T, vert> init = this->vertices.rand();
+		HashTable<T, vert> x;
+		x.insert(init.first, init.second);
+
+		graph<T> t;
+		t.add_vert(init.first);
+
+		while (int(x.size()) != this->vertices.used)
+		{
+			edge *next;
+			for (edge *e : this->edges)
+			{
+				auto contains_u = x[e->left];
+				auto contains_v = x[e->right];
+				// LAKSJHDPIAUSHFASDLKJ
+				if (contains_u != NULL && contains_v == NULL && e->weight < next->weight)
+				{
+					next = e;
+				};
+			}
+			t.add_vert(next->right);
+			t.add_edge(next->weight, next->left, next->right);
+			x.push_back(next->right);
+		}
+		return t;
+	}
+
+	graph<T> mst_kruskal()
+	{
+		graph<T> output;
+
+		// O(m^2)
+		// this->sort_edges();
+		for (edge *e : this->edges)
+		{
+			// Union-Find
+			if ((*this)[e->left].lider != (*this)[e->right].lider)
+			{
+				output.add_vert(e->left);
+				output.add_vert(e->right);
+				output.add_edge(e->weight, e->left, e->right);
+			}
+		}
+		return output;
+	}
 
 private:
 	class vert
 	{
 	public:
 		T val;
+		T lider;
 		std::vector<edge *> edges{};
-		vert(T v) : val{v} {};
+		vert(T v) : val{v}, lider{v} {};
 	};
 	class edge
 	{
 	public:
-		// meh
 		edge(int w, T l, T r) : weight{w}, left{l}, right{r} {};
 		int weight;
 		T left;
 		T right;
+
+		// TODO
+		// bool operator<()
+		// std::vector<edge *> sort()
+		// bool conectado()
 	};
 };
 
@@ -439,10 +549,43 @@ LongNatural operator-(LongNatural &lhs, const LongNatural &rhs)
 	return output;
 }
 
-LongNatural operator*(LongNatural &lhs, const LongNatural &rhs)
-{
-	return "";
-}
+// LongNatural operator*(LongNatural lhs, LongNatural rhs)
+// {
+
+// 	if (size(lhs) > 1 && size(rhs) > 1)
+// 	{
+// 		LongNatural output;
+// 		LongNatural a, b, c, d;
+// 		// si + tomara iterators no habría que hacer esto
+// 		std::copy(lhs.begin(), lhs.begin() + (size(lhs) / 2), a);
+// 		std::copy(lhs.begin() + (size(lhs) / 2), lhs.end(), b);
+// 		std::copy(rhs.begin(), rhs.begin() + (size(rhs) / 2), c);
+// 		std::copy(rhs.begin() + (size(rhs) / 2), rhs.end(), d);
+
+// 		LongNatural ac = a * c;
+// 		LongNatural bd = b * d;
+// 		LongNatural abcd = (a + b) * (c * d);
+// 		abcd = abcd - ac;
+// 		abcd = abcd - bd;
+
+// 		for (auto i = 0; i < int(size(lhs)); ++i)
+// 		{
+// 			ac += "0";
+// 			if (i % 2 == 0)
+// 				abcd += "0";
+// 		}
+
+// 		output = ac + abcd;
+// 		output += bd;
+
+// 		return output;
+// 	}
+// 	else
+// 	{
+// 		int out = std::stoi(lhs) * std::stoi(rhs);
+// 		return std::to_string(out);
+// 	}
+// }
 
 template <class T>
 class Heap

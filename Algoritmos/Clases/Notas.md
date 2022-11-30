@@ -741,3 +741,24 @@ Idea 2: Poner vertices de $v-x$ en heap. En lugar de facilitar al arista mínima
 Implementación ingenua: $O(m\cdot n)$ (+1 vertice por loop, iterando todos los edges por loop).
 
 ## Algoritmo de Kruskal
+
+Input: Grafo no-dirigido, aristas con costo. Asumimos que es conectado (chequeable) y las aristas tienen costos distintos (trivial).
+
+Output: MST (Grafo conectado sin ciclos).
+
+```
+sort(edges) by weight
+grafo T
+for i = 1 to m:
+  T += i if T U {i} has no cycles
+return T
+```
+
+## Estructura Union-Find
+
+1)  Una estructura linkeada por componente conectado de $(V,T)$.
+2)  Cada componente tiene un vértice "lider" arbitrario.
+3)  Cada vértice apunta al lider de su componente conectado
+4)  si u.lider == v.lider => E(u,v) ya están conectados
+
+Cómo mantener 3): Cuando dos componentes se combinan, el más pequeño hereda el líder del más grande.
