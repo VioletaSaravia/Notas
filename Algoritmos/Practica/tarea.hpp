@@ -56,7 +56,7 @@ public:
 
 	void insert(const std::pair<int, T> &n)
 	{
-		BSNode<T> *new_node = (*this)[n.first]; // :S [X]
+		BSNode<T> *new_node = (*this)[n.first];
 
 		new_node->key = n.first;
 		new_node->value = n.second;
@@ -132,10 +132,7 @@ public:
 		BSNode<T> output = s;
 		while (output.key >= k)
 		{
-			if (output.parent == nullptr)
-			{
-				throw "No hay anterior";
-			}
+			static_assert(output.parent != nullptr, "No hay anterior");
 			output = *(output.parent);
 		}
 		return output;
@@ -150,10 +147,7 @@ public:
 		BSNode<T> output = s;
 		while (output.key >= k)
 		{
-			if (output.parent == nullptr)
-			{
-				throw "No hay siguiente";
-			}
+			static_assert(output.parent != nullptr, "No hay siguiente");
 			output = *(output.parent);
 		}
 		return output;
@@ -188,7 +182,6 @@ template <class K, class V>
 class HashTable
 {
 private:
-	std::vector<std::vector<std::pair<K, V>>> balde{};
 	TIPO t;
 
 	void resize()
@@ -205,12 +198,16 @@ private:
 		{
 			h += int(c);
 		}
-		h = h % int(this->balde.size());
+		h = h % std::ssize(this->balde);
+		// h = h % int(this->balde.size());
 
 		return h;
 	}
 
 public:
+	// ups. falta implementar un loop por todos los ocupados
+	std::vector<std::vector<std::pair<K, V>>> balde{};
+
 	int used = 0;
 	HashTable(const TIPO &tipo) : t{tipo}
 	{
@@ -309,41 +306,55 @@ private:
 
 	bool creates_cycle(edge *e)
 	{
-		// O(m)
-		// Si no almacenara edges, podría hacer esto con BFS en O(n)
+		// Hacer con BFS
 		for (edge *m : this->edges)
-		{
 			if (m->left == e->left && m->right == e->right)
-			{
 				return true;
-			}
-		}
 		return false;
+	}
+
+	void sort_edges()
+	{
+		this->sort_edges(this->edges.begin(), int(this->edges.size()));
+	}
+
+	void sort_edges(std::vector<edge *>::iterator l, int size)
+	{
+		switch (size)
+		{
+		case 2:
+			if ((*l)->weight > (*(l + 1))->weight)
+			{
+				edge *swapperino = *l;
+				*l = *(l + 1);
+				++l;
+				*l = swapperino;
+			}
+		default:
+			auto first_half = this->edges.begin();
+			auto second_half = this->edges.begin() + int(this->edges.size()) / 2;
+			int half_size = this->edges.size() / 2;
+			// estarán al reves los size?¿
+			this->sort_edges(first_half, half_size);
+			this->sort_edges(second_half, this->edges.size() - half_size);
+			break;
+		}
 	}
 
 	void update_lider(T l, T r)
 	{
-		vert *vert_l = (*this)[l];
-		vert *vert_r = (*this)[r];
+		T lider_l = this->vertices[l].lider;
+		T lider_r = this->vertices[r].lider;
 
-		// Se rompe si uno de los vers justo es el lider.
-		// Usar empty init para vert.lider
-		if (vert_l->lider == vert_l->val && vert_r->lider == vert_r->val)
+		if (lider_l != lider_r)
 		{
-			vert_l->lider = vert_r->val;
+			for (auto b : vertices.balde)
+				for (std::pair<T, vert> v : b)
+					if (v.second.lider == lider_l)
+						v.second.lider = lider_r;
+			lider_l = lider_r;
 		}
-		else if (vert_l->lider == vert_l->val && vert_r->lider != vert_r->val)
-		{
-			vert_l->lider = vert_r->lider;
-		}
-		else if (vert_l->lider != vert_l->val && vert_r->lider == vert_r->val)
-		{
-			vert_r->lider = vert_l->lider;
-		}
-		else
-		{
-			// TODO
-		}
+		return;
 	}
 
 public:
@@ -367,7 +378,6 @@ public:
 	{
 		// TODO: no raw pointers
 		auto new_edge = new edge{w, l, r};
-		// is_cycle = this->creates_cycle(new_edge); // no anda
 		this->update_lider(l, r);
 
 		this->edges.push_back(new_edge);
@@ -410,9 +420,7 @@ public:
 				auto contains_v = x[e->right];
 				// LAKSJHDPIAUSHFASDLKJ
 				if (contains_u != NULL && contains_v == NULL && e->weight < next->weight)
-				{
 					next = e;
-				};
 			}
 			t.add_vert(next->right);
 			t.add_edge(next->weight, next->left, next->right);
@@ -425,8 +433,7 @@ public:
 	{
 		graph<T> output;
 
-		// O(m^2)
-		// this->sort_edges();
+		this->sort_edges();
 		for (edge *e : this->edges)
 		{
 			// Union-Find
@@ -549,43 +556,45 @@ LongNatural operator-(LongNatural &lhs, const LongNatural &rhs)
 	return output;
 }
 
-// LongNatural operator*(LongNatural lhs, LongNatural rhs)
-// {
+/*
+LongNatural operator*(LongNatural lhs, LongNatural rhs)
+{
 
-// 	if (size(lhs) > 1 && size(rhs) > 1)
-// 	{
-// 		LongNatural output;
-// 		LongNatural a, b, c, d;
-// 		// si + tomara iterators no habría que hacer esto
-// 		std::copy(lhs.begin(), lhs.begin() + (size(lhs) / 2), a);
-// 		std::copy(lhs.begin() + (size(lhs) / 2), lhs.end(), b);
-// 		std::copy(rhs.begin(), rhs.begin() + (size(rhs) / 2), c);
-// 		std::copy(rhs.begin() + (size(rhs) / 2), rhs.end(), d);
+	if (size(lhs) > 1 && size(rhs) > 1)
+	{
+		LongNatural output;
+		LongNatural a, b, c, d;
+		// si + tomara iterators no habría que hacer esto
+		std::copy(lhs.begin(), lhs.begin() + (size(lhs) / 2), a);
+		std::copy(lhs.begin() + (size(lhs) / 2), lhs.end(), b);
+		std::copy(rhs.begin(), rhs.begin() + (size(rhs) / 2), c);
+		std::copy(rhs.begin() + (size(rhs) / 2), rhs.end(), d);
 
-// 		LongNatural ac = a * c;
-// 		LongNatural bd = b * d;
-// 		LongNatural abcd = (a + b) * (c * d);
-// 		abcd = abcd - ac;
-// 		abcd = abcd - bd;
+		LongNatural ac = a * c;
+		LongNatural bd = b * d;
+		LongNatural abcd = (a + b) * (c * d);
+		abcd = abcd - ac;
+		abcd = abcd - bd;
 
-// 		for (auto i = 0; i < int(size(lhs)); ++i)
-// 		{
-// 			ac += "0";
-// 			if (i % 2 == 0)
-// 				abcd += "0";
-// 		}
+		for (auto i = 0; i < std::ssize(lhs); ++i)
+		{
+			ac += "0";
+			if (i % 2 == 0)
+				abcd += "0";
+		}
 
-// 		output = ac + abcd;
-// 		output += bd;
+		output = ac + abcd;
+		output += bd;
 
-// 		return output;
-// 	}
-// 	else
-// 	{
-// 		int out = std::stoi(lhs) * std::stoi(rhs);
-// 		return std::to_string(out);
-// 	}
-// }
+		return output;
+	}
+	else
+	{
+		int out = std::stoi(lhs) * std::stoi(rhs);
+		return std::to_string(out);
+	}
+}
+*/
 
 template <class T>
 class Heap
@@ -616,8 +625,7 @@ public:
 		(*this)[0] = (*this)[this->val.size()];
 		this->val.pop_back();
 
-		int i = 0;
-		while (this->val.size() > i * 2 + 1)
+		while (int i = 0; this->val.size() > i * 2 + 1)
 		{
 			// NOOOOO -.-
 			if ((*this)[i] > (*this)[i * 2 + 1])
@@ -633,4 +641,87 @@ public:
 	};
 	// void heapify();
 	// void delete();
+};
+
+template <class T>
+class encoding
+{
+	class BTree
+	{
+		struct node
+		{
+			node *left;
+			node *right;
+			char c;
+		};
+
+		/* */
+	};
+	using charset = std::map<char, std::string>;
+	std::string code;
+	BTree codetree;
+
+	charset analizar(T &in)
+	{
+		int total = std::ssize(in);
+		std::map<char, float> density;
+
+		for (auto c : in)
+		{
+			if (!std::is_empty(density[c]))
+				++density[c];
+			else
+				density[c] = 1;
+		}
+
+		// al reves lol
+		std::sort(density.begin(), density.end(), std::greater<>());
+
+		charset output;
+		int i = 0;
+		for (auto c : density)
+		{
+			std::string code;
+			// revisar
+			for (auto j = 0; j != i; ++j)
+				code += "1";
+			code = i % 2 ? code + "0" : code + "1";
+
+			// TODO implementar
+			// Mejor: Huffman's bottom-up approach
+			this->codetree.insert(code, c.first);
+
+			output[c.first] = code;
+		}
+		return output;
+	};
+
+public:
+	encoding(T &in)
+	{
+		charset chars = this->analizar(in);
+		for (auto c : in)
+			this->code += chars[c];
+	};
+	~encoding(){};
+
+	T decode(encoding<T> &in)
+	{
+		T output;
+		for (auto n : this->code)
+		{
+			// TODO implementar;
+			auto tree_it = this->codetree.begin();
+			if (n == "0")
+				tree_it.left();
+			else
+				tree_it.right();
+			if (tree_it.left != "0" && tree_it.left != "1")
+			{
+				T += tree_it.left;
+				tree_it = this->codetree.begin();
+			}
+		}
+		return T;
+	};
 };

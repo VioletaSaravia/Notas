@@ -294,11 +294,6 @@ public:
 	}
 };
 
-// template <class T>
-// graph<T> graph::mst_prim()
-// {
-// }
-
 int main()
 {
 	std::vector<int> sortEx = {5, 4, 1, 8, 7, 2, 6, 3, 9};

@@ -750,15 +750,77 @@ Output: MST (Grafo conectado sin ciclos).
 sort(edges) by weight
 grafo T
 for i = 1 to m:
-  T += i if T U {i} has no cycles
+    T += i if T + {i} has no cycles
 return T
 ```
 
-## Estructura Union-Find
+### Otros algoritmos MST
+
+- Karger-Klein-Tarjan JACM 1995, $O(m)$ aleatorizado
+- Chazelle JACM 200, $O(m\cdot\alpha (n))$ determinista ($\alpha (n)$ = Función de Ackermann inversa, mucho más lenta que $\log^*n$ (inverso de $2\uparrow\uparrow t$))
+- Pettie/Ramachandran JACM 2002, entre $O(m)$ y Chazelle, pero su complejidad no está demostrada.
+- Algoritmo aleatorio, lineal en $m$, sencillo? Podría hacerse generando MSTs al azar y verificándolos (Cómo?).
+- Ver [Eisner 97].
+
+## Clustering
+
+Dados $n$ puntos en el espacio, clasificarlos en grupos "coherentes". Cada punto tiene una medida de similitud, en este caso una función distancia(p,q) entre cada par. Distancia() es simética ($d(p,q) = d(q,p)$).
+
+### Max-Spacing k-Clusterings
+
+Asumimos que sabemos el número de clusters deseados (k) (puede variarse en práctica); $p?q$ están separados si se los asigna a distintos clusters. El *spacing* de un k-clustering es $min_{p?q}d(p,q)$
+
+### Algoritmo Voraz
+
+```
+clusters = [x for x in points]
+while (#clusters != k):
+    p, q = closest_separated_pair()
+    merge(p,q)
+```
+
+Igual a Kruskal: puntos = vertices, distancias = pesos, pares = aristas. Se llama single-link clustering.
+
+# Union-Find
 
 1)  Una estructura linkeada por componente conectado de $(V,T)$.
 2)  Cada componente tiene un vértice "lider" arbitrario.
 3)  Cada vértice apunta al lider de su componente conectado
 4)  si u.lider == v.lider => E(u,v) ya están conectados
 
-Cómo mantener 3): Cuando dos componentes se combinan, el más pequeño hereda el líder del más grande.
+Cómo mantener 3): Cuando dos componentes se combinan, el más pequeño hereda el líder del más grande. Esto genera $\Theta (n)$ operaciones cada vez que hay que cambiar de lider, u $\Theta(\log n)$ operaciones por vector.
+
+# Códigos de Huffman
+
+Código binario: mapear cada caracter de un alfabeto $\Sigma$ a un string binario. Por ejemplo, a-z y puntuacion (tamaño ~32). La solución obvia es usar 32 binary strings de 5-bits para codificar $\Sigma$ (código de largo fijo).
+
+Largo ambiguo: Si $\Sigma = \{A,B,C,D\}$, el encoding de largo fijo sería $\{00,01,10,11\}$ (largo fijo). Supongamos que en su lugar usamos $\{0,01,10,1\}$. Cómo desambiguar streams de bits? Solución: Códigos *libres de prefijo*, asegurarse que $\forall i,j\in\Sigma$, ninguno de los encodings $f(i),f(j)$ sea prefijo del otro.
+
+Ejemplo 1: $f(\{A,B,C,D\})=\{0,10,110,111\}$
+
+Ejemplo 2:
+
+| $\Sigma$ | frecuencias | largo fijo | largo variable |
+| -------- | ----------- | ---------- | -------------- |
+| $A$      | 60%         | 00         | 0              |
+| $B$      | 25%         | 01         | 10             |
+| $C$      | 10%         | 10         | 110            |
+| $D$      | 5%          | 11         | 111            |
+
+- Bits promedio por caracter: 1.55
+
+## Códigos como Árboles
+
+Para mantener la propiedad prefix-free, representamos los bits como un arbol binario con el hijo izquierdo = 0 y el hijo derecho = 1. Las hojas corresponden al caracter (lo que mantiene la propiedad prefix-free) y las aristas corresponden a cada número del código.
+
+## Algoritmo Voraz
+
+Crear Arbol: Se pueden insertar caracteres del alfabeto de arriba a abajo, o construir el arbol de abajo a arriba agregando letras nuevas al lado izquierdo de un nuevo parent (Huffman).
+
+# Programación Dinámica
+
+# Problema del Saco
+
+# Alineamiento de Secuencias
+
+# BSTs Óptimos
