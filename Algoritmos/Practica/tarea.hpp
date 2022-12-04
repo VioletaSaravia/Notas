@@ -1,7 +1,8 @@
 #include <vector>
 #include <string>
-#include <algorithm>
-#include <type_traits>
+#include <algorithm>   // std::find(), std::sort()
+#include <type_traits> // std::is_empty()
+#include <functional>  // std::hash()
 
 enum dir
 {
@@ -28,7 +29,6 @@ class BSTree
 private:
 	void inicializar_nodo_vacio(BSNode<T> &n)
 	{
-		// NULL?¿
 		auto empty_left = new BSNode<T>{
 			parent : &n
 		};
@@ -191,7 +191,7 @@ private:
 		return;
 	}
 
-	int hashear(K k) // solo para strings :?
+	int hash(K k)
 	{
 		int h;
 		for (auto c : k)
@@ -199,13 +199,14 @@ private:
 			h += int(c);
 		}
 		h = h % std::ssize(this->balde);
-		// h = h % int(this->balde.size());
+
+		// auto out = std::hash(k);
 
 		return h;
 	}
 
 public:
-	// ups. falta implementar un loop por todos los ocupados
+	// ups
 	std::vector<std::vector<std::pair<K, V>>> balde{};
 
 	int used = 0;
@@ -222,7 +223,7 @@ public:
 
 	V &operator[](const K &k)
 	{
-		auto h = hashear(k);
+		auto h = hash(k);
 		for (auto it = this->balde[h].begin(); it < this->balde[h].end(); ++it)
 		{
 			if (it->first == k)
@@ -243,7 +244,7 @@ public:
 			this->resize();
 		}
 
-		int h = this->hashear(k);
+		int h = this->hash(k);
 
 		if (this->balde[h].empty() || t == CHAIN)
 		{
@@ -263,7 +264,7 @@ public:
 
 	void erase(const K &k)
 	{
-		int h = this->hashear(k);
+		int h = this->hash(k);
 		for (auto it = this->balde[h].begin(); it < this->balde[h].end(); ++it)
 		{
 			if (it->first == k)
@@ -471,130 +472,10 @@ private:
 	};
 };
 
-template <class T>
-struct point
-{
-	T x;
-	T y;
 
-	point operator+(const point rhs)
-	{
-		return {{x = this->x + rhs.x},
-				{y = this->y + rhs.y}};
-	}
-
-	point operator-(const point rhs)
-	{
-		return {{x = this->x - rhs.x},
-				{y = this->y - rhs.y}};
-	}
-
-	point operator*(const T rhs)
-	{
-		return {{x = this->x * rhs},
-				{y = this->y * rhs}};
-	}
-};
 
 // class :?
-using LongNatural = std::string;
 
-LongNatural operator+(LongNatural &lhs, const LongNatural &rhs)
-{
-	auto rindex = rhs.end() - 1;
-	auto lindex = lhs.end() - 1;
-	int leftover = 0;
-	int tempOut;
-	std::string output;
-
-	while (lindex >= lhs.begin() || leftover != 0) // mmm !=??
-	{
-		int rvalue = rindex >= rhs.begin() ? int(*rindex) - 48 : 0;
-		int lvalue = lindex >= lhs.begin() ? int(*lindex) - 48 : 0;
-		tempOut = lvalue + rvalue + leftover;
-		leftover = 0;
-		if (tempOut > 9)
-		{
-			leftover = tempOut / 10;
-			tempOut = tempOut % 10;
-		}
-		output.insert(output.begin(), 1, tempOut + '0');
-
-		--rindex;
-		--lindex;
-	}
-	return output;
-}
-
-LongNatural operator-(LongNatural &lhs, const LongNatural &rhs)
-{
-	if (size(lhs) < size(rhs))
-		throw "resultado no es natural";
-
-	auto rindex = rhs.end() - 1;
-	auto lindex = lhs.end() - 1;
-	int leftover = 0;
-	int tempOut;
-	std::string output;
-
-	while (lindex >= lhs.begin())
-	{
-		int rvalue = rindex >= rhs.begin() ? int(*rindex) - 48 : 0;
-		int lvalue = lindex >= lhs.begin() ? int(*lindex) - 48 : 0;
-		tempOut = lvalue - rvalue - leftover;
-		leftover = 0;
-		if (tempOut < 0)
-		{
-			leftover = 1;
-			tempOut = 10 - abs(tempOut); // :?
-		}
-		output.insert(output.begin(), 1, tempOut + '0');
-
-		--rindex;
-		--lindex;
-	}
-	return output;
-}
-
-/*
-LongNatural operator*(LongNatural lhs, LongNatural rhs)
-{
-
-	if (size(lhs) > 1 && size(rhs) > 1)
-	{
-		LongNatural output;
-		LongNatural a, b, c, d;
-		// si + tomara iterators no habría que hacer esto
-		std::copy(lhs.begin(), lhs.begin() + (size(lhs) / 2), a);
-		std::copy(lhs.begin() + (size(lhs) / 2), lhs.end(), b);
-		std::copy(rhs.begin(), rhs.begin() + (size(rhs) / 2), c);
-		std::copy(rhs.begin() + (size(rhs) / 2), rhs.end(), d);
-
-		LongNatural ac = a * c;
-		LongNatural bd = b * d;
-		LongNatural abcd = (a + b) * (c * d);
-		abcd = abcd - ac;
-		abcd = abcd - bd;
-
-		for (auto i = 0; i < std::ssize(lhs); ++i)
-		{
-			ac += "0";
-			if (i % 2 == 0)
-				abcd += "0";
-		}
-
-		output = ac + abcd;
-		output += bd;
-
-		return output;
-	}
-	else
-	{
-		int out = std::stoi(lhs) * std::stoi(rhs);
-		return std::to_string(out);
-	}
-}
-*/
 
 template <class T>
 class Heap
@@ -643,85 +524,3 @@ public:
 	// void delete();
 };
 
-template <class T>
-class encoding
-{
-	class BTree
-	{
-		struct node
-		{
-			node *left;
-			node *right;
-			char c;
-		};
-
-		/* */
-	};
-	using charset = std::map<char, std::string>;
-	std::string code;
-	BTree codetree;
-
-	charset analizar(T &in)
-	{
-		int total = std::ssize(in);
-		std::map<char, float> density;
-
-		for (auto c : in)
-		{
-			if (!std::is_empty(density[c]))
-				++density[c];
-			else
-				density[c] = 1;
-		}
-
-		// al reves lol
-		std::sort(density.begin(), density.end(), std::greater<>());
-
-		charset output;
-		int i = 0;
-		for (auto c : density)
-		{
-			std::string code;
-			// revisar
-			for (auto j = 0; j != i; ++j)
-				code += "1";
-			code = i % 2 ? code + "0" : code + "1";
-
-			// TODO implementar
-			// Mejor: Huffman's bottom-up approach
-			this->codetree.insert(code, c.first);
-
-			output[c.first] = code;
-		}
-		return output;
-	};
-
-public:
-	encoding(T &in)
-	{
-		charset chars = this->analizar(in);
-		for (auto c : in)
-			this->code += chars[c];
-	};
-	~encoding(){};
-
-	T decode(encoding<T> &in)
-	{
-		T output;
-		for (auto n : this->code)
-		{
-			// TODO implementar;
-			auto tree_it = this->codetree.begin();
-			if (n == "0")
-				tree_it.left();
-			else
-				tree_it.right();
-			if (tree_it.left != "0" && tree_it.left != "1")
-			{
-				T += tree_it.left;
-				tree_it = this->codetree.begin();
-			}
-		}
-		return T;
-	};
-};

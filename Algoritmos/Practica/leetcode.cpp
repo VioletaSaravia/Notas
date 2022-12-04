@@ -6,7 +6,7 @@
 #include <string>
 #include <algorithm>
 
-using namespace std;
+using namespace std; // no
 
 // 1480
 class Solution
