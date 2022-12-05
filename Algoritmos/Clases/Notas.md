@@ -815,11 +815,38 @@ Para mantener la propiedad prefix-free, representamos los bits como un arbol bin
 
 ## Algoritmo Voraz
 
-Crear Arbol: Se pueden insertar caracteres del alfabeto de arriba a abajo, o construir el arbol de abajo a arriba agregando letras nuevas al lado izquierdo de un nuevo parent (Huffman).
+Crear Arbol: Se pueden insertar caracteres del alfabeto de arriba a abajo, o construir el arbol de abajo a arriba agregando letras nuevas al lado izquierdo de un nuevo parent.
 
 # Programación Dinámica
 
-# Problema del Saco
+1) Identificar un número pequeño de subproblemas.
+2) Solucionar los subproblemas más grandes con las soluciones de los subproblemas más chicos.
+
+## Ejemplo 1
+
+Input: Path graph $G=(V,E)$ con pesos no-negativos en los vértices.
+
+Output: Conjunto independiente, i.e. subconjunto de los vértices en el que no haya dos vertices adyacientes, con el mayor peso posible.
+
+Idea: El algoritmo voraz no funciona y el D&C más obvio tampoco. Pensar estructura de la solución óptima, en términos de soluciones óptimas a subproblemas menores. Sea $C\subseteq V$ el conjunto independiente (CI) de mayor peso, y $v_n=$ último vértice del grafo.
+
+Caso 1: $v_n\notin S$ (solución). Sea $G'=G-\{v_n\}$. $S$ también es un CI de peso máximo de $G'$.
+
+Caso 2: $v_n\in S \Rightarrow v_{n-1}\notin S$. Sea $G'' = G - \{v_n, v_{n-1}\}$. $S-\{v_n\}$ es un CI de $G''$, y debe ser el CI de peso máximo de $G''$.
+
+Conclusiones:
+
+1) Un CI de peso maximo debe ser sí o sí a) un CI de peso máximo de $G'$, o $v_n$ + un CI de peso máximo de $G''$.
+2) Si subieramos en qué caso estamos, podemos solucionar el problema por recursión.
+3) Ergo, si probamos ambas posibilidades y devolvemos la mejor solución, podemos solucionar el problema por recursión. Esto es equivalente a solucionar el problema por fuerza bruta, solo con una recursión ordenada.
+
+Mejora: Guardar la solucion de cada subproblema en caché. Como sólo hay O(n) problemas distintos, esto reduce el algoritmo a O(n) (*memoización*).
+
+## Ejemplo 2 (Problema de la Mochila)
+
+Input: n items, con un valor $v_i$ y un tamaño $w_i$ no negativos, y una capacidad $W$ no negativa.
+
+Output: Subconjunto $S\subseteq \{1,2,3,...,n\}$ que maximice $\sum_{i\in S}v_i$, sujeto a $\sum_{i\in S}w_i\leq W$.
 
 # Alineamiento de Secuencias
 

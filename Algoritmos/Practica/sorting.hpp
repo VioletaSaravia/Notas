@@ -1,4 +1,5 @@
 #include <vector>
+#include <iterator>
 
 template <class T>
 std::vector<T> MergeSort(const std::vector<T> &l)
@@ -97,6 +98,7 @@ void QuickSort(
 }
 
 template <class T>
+// requires std::sortable<T>;
 void QuickSort(std::vector<T> &A)
 {
 	return QuickSort(A, A.begin(), A.end());

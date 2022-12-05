@@ -1,82 +1,137 @@
-template <class T>
+#include <cstring>
+#include <string>
+#include <type_traits>
+
+using bcode = std::string;
+class BTree
+{
+	class node
+	{
+	public:
+		node *left = nullptr;
+		node *right = nullptr;
+		node *parent = nullptr;
+		char *b = nullptr;
+		char *c = nullptr;
+
+		node(node *p, char b) : parent{p}, b{&b} {};
+		node(char b) : b{&b} {};
+		node(){};
+	};
+
+	node *root = new node();
+
+	/* */
+public:
+	void insert_binary(bcode code, char new_c)
+	{
+		node *current = root;
+		for (auto b : code) // bleh
+		{
+			switch (b)
+			{
+			case 1:
+				if (current->right == nullptr)
+					current->right = new node(current, b);
+				current = current->right;
+				break;
+
+			case 0:
+				if (current->left == nullptr)
+					current->left = new node(current, b);
+				current = current->left;
+				break;
+
+			default:
+				throw "Código inválido";
+			}
+		}
+		current->c = &new_c;
+	}
+
+	char *operator[](bcode code)
+	{
+		// abstraer[] e insert en find()
+		node *current = root;
+		for (auto b : code)
+		{
+			current = b == 1 ? current->right : current->left;
+		}
+		return current->c;
+	}
+};
+
 class encoding
 {
-	class BTree
-	{
-		struct node
-		{
-			node *left;
-			node *right;
-			char c;
-		};
 
-		/* */
-	};
-	using charset = std::map<char, std::string>;
-	std::string code;
+	using charset = std::map<char, bcode>;
 	BTree codetree;
+	charset chars;
+	bcode encoded = "";
 
-	charset analizar(T &in)
+	charset analizar(std::string &in)
 	{
-		int total = std::ssize(in);
 		std::map<char, float> density;
 
 		for (auto c : in)
 		{
-			if (!std::is_empty(density[c]))
+			if (density[c] != 0)
 				++density[c];
 			else
 				density[c] = 1;
 		}
 
-		// al reves lol
-		std::sort(density.begin(), density.end(), std::greater<>());
+		// no implementado wtf
+		// std::sort(density.begin(), density.end(), std::greater<>());
 
 		charset output;
 		int i = 0;
 		for (auto c : density)
 		{
-			std::string code;
+			bcode code;
 			// revisar
 			for (auto j = 0; j != i; ++j)
 				code += "1";
-			code = i % 2 ? code + "0" : code + "1";
+			// code = i % 2 == 0 ? code + "0" : code + "1";
+			if (i % 2 == 0)
+				code += "0";
+			else
+				code += "1";
 
-			// TODO implementar
-			// Mejor: Huffman's bottom-up approach
-			this->codetree.insert(code, c.first);
+			// n log n
+			// Mejor: Huffman's bottom-up approach (n)
+			this->codetree.insert_binary(code, c.first); // unimplemented
 
 			output[c.first] = code;
+			++i;
 		}
 		return output;
 	};
 
 public:
-	encoding(T &in)
+	encoding(std::string &in) : codetree{}, chars{}
 	{
-		charset chars = this->analizar(in);
+		codetree = BTree();
+		chars = this->analizar(in);
 		for (auto c : in)
-			this->code += chars[c];
+			this->encoded += chars[c];
 	};
 	~encoding(){};
 
-	T decode(encoding<T> &in)
+	std::string decode()
 	{
-		T output;
-		for (auto n : this->code)
+		std::string output;
+		bcode to_decode;
+		for (auto n : this->encoded)
 		{
-			// TODO implementar;
-			auto tree_it = this->codetree.begin();
-			if (n == "0")
-				tree_it.left();
-			else
-				tree_it.right();
-			if (tree_it.left != "0" && tree_it.left != "1")
+			to_decode += n;
+			char *decoded = codetree[to_decode];
+			if (decoded != nullptr)
 			{
-				T += tree_it.left;
-				tree_it = this->codetree.begin();
+				output += decoded;
+				to_decode.clear();
 			}
 		}
-		return T;
+		return output;
 	};
 };

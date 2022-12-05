@@ -10,6 +10,8 @@
 #include "tarea.hpp"
 #include "sorting.hpp"
 #include "geometria.hpp"
+#include "longnums.hpp"
+#include "encoding.hpp"
 
 template <class T>
 int CountInversions(const std::vector<T> &l)

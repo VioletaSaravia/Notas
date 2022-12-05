@@ -209,7 +209,7 @@ public:
 	// ups
 	std::vector<std::vector<std::pair<K, V>>> balde{};
 
-	int used = 0;
+	size_t used{0};
 	HashTable(const TIPO &tipo) : t{tipo}
 	{
 		this->balde.resize(11);
@@ -412,7 +412,7 @@ public:
 		graph<T> t;
 		t.add_vert(init.first);
 
-		while (int(x.size()) != this->vertices.used)
+		while (x.size() != this->vertices.used)
 		{
 			edge *next;
 			for (edge *e : this->edges)
@@ -467,15 +467,9 @@ private:
 
 		// TODO
 		// bool operator<()
-		// std::vector<edge *> sort()
 		// bool conectado()
 	};
 };
-
-
-
-// class :?
-
 
 template <class T>
 class Heap
@@ -506,7 +500,8 @@ public:
 		(*this)[0] = (*this)[this->val.size()];
 		this->val.pop_back();
 
-		while (int i = 0; this->val.size() > i * 2 + 1)
+		int i = 0;
+		while (this->val.size() > i * 2 + 1)
 		{
 			// NOOOOO -.-
 			if ((*this)[i] > (*this)[i * 2 + 1])
@@ -523,4 +518,3 @@ public:
 	// void heapify();
 	// void delete();
 };
-
