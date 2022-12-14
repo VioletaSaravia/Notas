@@ -848,6 +848,75 @@ Input: n items, con un valor $v_i$ y un tamaño $w_i$ no negativos, y una capaci
 
 Output: Subconjunto $S\subseteq \{1,2,3,...,n\}$ que maximice $\sum_{i\in S}v_i$, sujeto a $\sum_{i\in S}w_i\leq W$.
 
-# Alineamiento de Secuencias
+## Ejemplo 3 (Alineamiento de Secuencias)
+
+Objetivo: Computar una medida de similitud entre textos (puntaje Needleman-Wunsch)
+
+AGGGCT
+
+AG--CA => $Penalidad=2\alpha_{gap}+\alpha_{AT}$
+
+Input: strings $X=x_1,...,x_m,Y=y_1,...,y_n$ sobre un alfabeto $\Sigma=\{A,T,C,G\}$. Penalidades $\alpha_gap\geq 0$ por insertar un espacio, $\alpha_{ab}$ por juntar un par $a,b:a\not ={b}$
+
+Solución: Alineamientos que igualicen los largos de las strings. Calcular la mínima penalidad posible. La solución óptima podría involucrar agregar espacios a ambos inputs.
+
+Razonamiento: Ver la estructura de una solución óptima, desarrollar una recurrencia y extraer subproblemas.
+
+Contenidos de la posición final:
+
+Caso 1: $y_n,x_m$ combinan
+
+Caso 2: $x_m$ combina con un espacio
+
+Caso 3: $y_n$ combina con un espacio
+
+Caso 4: No hay. Si ambos fueran espacios podrían eliminarse ambos para conseguir un alineamiento siempre mejor.
+
+Subestructura óptima: Sea $X'=X-\{x_m\},Y'=Y-\{y_n\}$ (Alineamiento inducido: subproblema con $X',Y'$)
+
+En el caso 1, el alineamiento inducido de $X',Y'$ es óptimo.
+
+En el caso 2, el alineamiento inducido de $X',Y$ es óptimo.
+
+En el caso 3, el alineamiento inducido de $X,Y'$ es óptimo.
+
+Subproblemas relevantes: Tienen la forma $(X_i,Y_j)$, con $X_i$ = primeras $i$ letras de $X$ y $Y_j$ = primeras $j$ letras de $Y$.
+
+Recurrencias ($P_{ij}$ = penalidad de un alineamiento opcional de $X_i,Y_j$.):
+
+$P_{ij}$ = 1) $\alpha_{x_iy_j}+P_{(i-1),(j-1)}$, 2) $\alpha_{gap}+P_{(i-1),j}$, 3) $\alpha_{gap}+P_{i,(j-1)}$.
+
+Casos base: $P_{i,0},P_{0,i}=i\cdot \alpha_{gap}$
+
+### Algoritmo
+
+```
+A = 2D array
+A[i,0] = A[0,i] = i * alpha_gap for all i >= 0
+for i= 1 to m
+  for j = 1 to n
+    A[i][j] = min[1), 2) or 3)]
+```
 
 # BSTs Óptimos
+
+# Bellman-Ford
+
+Input: Grafo dirigido $G=(V,E)$ con largo $c_e$ por arista $e\in E$, vértice origen $s\in V$. Trivial asumir que no hay paralelos.
+
+## Problemas
+
+Dijkstra:
+
+1) No siempre correcto para aristas negativas.
+2) Necesita el grafo completo en memoria (no sirve para estructuras distribuidas, e.g. internet).
+
+Ciclos negativos: Si los permitimos, el resultado del algoritmo sería $-\infin$ para cualquier grafo con ciclos negativos. Pero calcular el camino más corto en un grafo con ciclos negativos es un problema NP. Asumimos que no los hay por ahora. Bellman-Ford puede detectarlos.
+
+## Programación Dinámica
+
+Lemma: Para cada $v\in V, i\in \{1,2,3,...\}$, sea $P =$ camino más corto $\bar {sv}$ que utilice como máximo $i$ aristas.
+
+Caso 1: Si P tiene <=(i-1) aristas, debe ser el camino más corto sv con <=(i-1) aristas.
+
+Caso 2: Si P tiene $i$ aristas con el último salto $(w, v)$, ese camino P' es el más corto.

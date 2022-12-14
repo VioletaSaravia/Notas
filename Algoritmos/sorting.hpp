@@ -97,9 +97,9 @@ void QuickSort(
 		QuickSort(A, i, r);
 }
 
-template <class T>
+// template <class T>
 // requires std::sortable<T>;
-void QuickSort(std::vector<T> &A)
+void QuickSort(auto &A)
 {
 	return QuickSort(A, A.begin(), A.end());
 }

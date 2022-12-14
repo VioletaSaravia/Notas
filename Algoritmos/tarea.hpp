@@ -518,3 +518,36 @@ public:
 	// void heapify();
 	// void delete();
 };
+
+// hacer con <ranges>?
+template <class T>
+int opt_align(T &X, T &Y, typename T::iterator endX, typename T::iterator endY)
+{
+	int ALPHA_GAP = 3;
+	int ALPHA_XY = 7;
+	std::vector<std::vector<int>> penalty;
+
+	if (endX == X.begin())
+		return (endY - Y.begin()) * ALPHA_GAP;
+	if (endY == Y.begin())
+		return (endX - X.begin()) * ALPHA_GAP;
+
+	for (size_t i = 0; i < endX; ++i)
+	{
+		for (size_t j = 0; j < endY; ++j)
+		{
+			if (*endX == *endY)
+				return 0;
+			int case_one = opt_align(X, Y, endX - 1, endY - 1) + ALPHA_XY;
+			int case_two = opt_align(X, Y, endX - 1, endY) + ALPHA_GAP;
+			int case_three = opt_align(X, Y, endX, endY) + ALPHA_GAP;
+			penalty[i][j] = std::min(case_one, case_two, case_three);
+		}
+	}
+};
+
+template <class T>
+int opt_align(T &X, T &Y)
+{
+	return opt_align(X, Y, X.end(), Y.end()) :
+}
