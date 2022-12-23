@@ -7,10 +7,9 @@
 #include <stack>
 #include <set>
 #include <algorithm>
-#include "tarea.hpp"
+#include "grafos.hpp"
 #include "sorting.hpp"
 #include "geometria.hpp"
-#include "longnums.hpp"
 #include "encoding.hpp"
 
 template <class T>
