@@ -10,13 +10,13 @@
                 "${file}",
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}",
-                "-pedantic-errors",
+                "-std=c++20",
                 "-Wall",
                 "-Weffc++",
                 "-Wextra",
                 "-Wsign-conversion",
                 "-Werror",
-                "-std=c++20"
+                "-pedantic-errors"
             ],
             "options": {
                 "cwd": "${fileDirname}"

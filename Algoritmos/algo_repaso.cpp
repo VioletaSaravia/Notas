@@ -4,6 +4,10 @@
 #include <vector>
 #include <fstream>
 #include <iostream>
+#include <sstream>
+#include <algorithm>
+#include <numeric> // iota
+#include <map>
 
 using LongNat = std::string;
 
@@ -150,7 +154,7 @@ LongNat operator*(LongNat &lhs, LongNat &rhs)
 }
 
 template <class T>
-T mergesort(const T &list)
+T mergesort(const T &list) noexcept
 {
 	T output{};
 	if (list.size() == 1)
@@ -260,321 +264,259 @@ long int count_inversions(T &list)
 template <class T>
 void quicksort(
 	T &list,
-	const typename T::iterator begin,
-	const typename T::iterator end)
+	auto begin,
+	auto end)
 {
-	typename T::iterator pivot = list.begin();
-	if (begin + 1 == end)
+	if (begin >= end)
 		return;
-	quicksort(list, begin, pivot);
-	quicksort(list, pivot, end);
+
+	auto pivot = begin + (rand() % std::distance(begin, end));
+	std::swap(*pivot, *begin);
+
+	auto i = begin + 1;
+	for (auto j = begin + 1; j != end; ++j)
+		if (*j < *begin)
+		{
+			std::swap(*j, *i);
+			++i;
+		};
+	std::swap(*(i - 1), *begin);
+
+	quicksort(list, begin, i - 1);
+	// quicksort(list, pivot + 1, end);
+	quicksort(list, i, end);
 	return;
 }
 
 // Duplicados: p. 118, nota 1
 template <class T>
-void quicksort(T &&list)
+void quicksort(T &list)
 {
 	quicksort(list, list.begin(), list.end());
 	return;
 };
 
-void rselect(){};
-void dselect(){};
-
-using matrix = std::vector<std::vector<int>>;
-
-// Strassen
-// matrix operator*(const matrix &lhs, const matrix &rhs)
-// {
-// 	lhs;
-// 	rhs;
-// 	throw "Not implemented";
-// }
-
-using Point1D = int;
-
-struct Point2D
+template <class T>
+T rselect(std::vector<T> &list, auto begin, auto end, int sel)
 {
-	int x, y;
-};
+	if (std::distance(begin, end) == 1)
+		return *begin;
 
-struct Point3D
-{
-	int x, y, z;
-};
+	auto pivot = begin + (rand() % std::distance(begin, end));
+	std::swap(*pivot, *begin);
 
-std::pair<Point1D, Point1D> closest_pair(std::vector<Point1D> &line)
-{
-	auto sorted = mergesort(line);
-	std::pair<Point1D, Point1D> output{*sorted.begin(), *(sorted.begin() + 1)};
-
-	for (auto i = sorted.begin(); i != sorted.end() - 1; ++i)
-	{
-		if (output.second - output.first >= *(i + 1) - *i)
-			continue;
-		output = {*i, *(i + 1)};
-	}
-
-	return output;
-}
-
-enum coord
-{
-	x,
-	y
-};
-
-int distance(const Point2D &a, const Point2D &b)
-{
-	const int dist_x = std::pow(a.x - b.x, 2);
-	const int dist_y = std::pow(a.y - b.y, 2);
-	return sqrt(dist_x + dist_y);
-}
-
-int distance(const std::pair<Point2D, Point2D> &points)
-{
-	return distance(points.first, points.second);
-}
-
-std::vector<Point2D> sort_by(std::vector<Point2D> &plane, coord c)
-{
-	std::vector<Point2D> output{};
-	if (plane.size() == 1)
-		return plane;
-	if (plane.size() == 2)
-	{
-		switch (c)
+	auto i = begin + 1;
+	for (auto j = begin + 1; j != end; ++j)
+		if (*j < *begin)
 		{
-		case x:
-			if (plane.begin()->x > (plane.begin() + 1)->x)
-			{
-				output.push_back(*(plane.begin() + 1));
-				output.push_back(*plane.begin());
-				return output;
-			}
-			else
-			{
-				return plane;
-			}
-			break;
-
-		case y:
-			if (plane.begin()->y > (plane.begin() + 1)->y)
-			{
-				output.push_back(*(plane.begin() + 1));
-				output.push_back(*plane.begin());
-				return output;
-			}
-			else
-			{
-				return plane;
-			}
-			break;
-
-		default:
-			break;
+			std::swap(*j, *i);
+			++i;
 		};
-	}
+	std::swap(*(i - 1), *begin);
 
-	auto half = plane.begin() + (plane.end() - plane.begin()) / 2;
-	std::vector<Point2D> left{};
-	std::vector<Point2D> right{};
-	std::copy(plane.begin(), half, std::back_inserter(left));
-	std::copy(half, plane.end(), std::back_inserter(right));
-	left = sort_by(left, c);
-	right = sort_by(right, c);
-
-	auto l_it = left.begin();
-	auto r_it = right.begin();
-	for (size_t i = 0; i < plane.size(); ++i)
-	{
-		if (l_it == left.end())
-		{
-			output.push_back(*r_it);
-			++r_it;
-			continue;
-		}
-		if (r_it == right.end())
-		{
-			output.push_back(*l_it);
-			++l_it;
-			continue;
-		}
-		switch (c)
-		{
-		case x:
-			if (l_it->x > r_it->x)
-			{
-				output.push_back(*r_it);
-				++r_it;
-			}
-			else
-			{
-				output.push_back(*l_it);
-				++l_it;
-			}
-			break;
-		case y:
-			if (l_it->y > r_it->y)
-			{
-				output.push_back(*r_it);
-				++r_it;
-			}
-			else
-			{
-				output.push_back(*l_it);
-				++l_it;
-			}
-		}
-	}
-
-	return output;
-}
-
-std::pair<Point2D, Point2D> closest_split_pair(
-	std::vector<Point2D> &plane_x,
-	std::vector<Point2D> &plane_y,
-	int delta)
-{
-	int mid_x = (plane_x.begin() + (plane_x.end() - plane_x.begin()) / 2 - 1)->x;
-
-	std::vector<Point2D> solutions;
-	for (auto i = plane_y.begin(); i != plane_y.end(); ++i)
-		if (i->x > mid_x - delta && i->x < mid_x + delta)
-			solutions.push_back(*i);
-
-	int best = delta;
-	std::pair<Point2D, Point2D> bestPair;
-
-	for (auto i = solutions.begin(); i != solutions.end() - 1; ++i)
-	{
-		for (int j = 1; j < std::min(7, int(solutions.end() - i)); ++j)
-		{
-			const int dist = distance(*i, *(i + j));
-			if (dist < best)
-			{
-				best = dist;
-				bestPair = {*i, *(i + j)};
-			}
-		}
-	}
-
-	return bestPair;
-}
-
-std::pair<Point2D, Point2D> closest_pair(
-	std::vector<Point2D> &plane_x,
-	std::vector<Point2D> &plane_y)
-{
-	std::pair<Point2D, Point2D> left_best, right_best, split_best;
-	int left_d, right_d, split_d;
-
-	if (plane_x.size() == 3)
-	{
-		left_best = {plane_x[0], plane_x[1]};
-		right_best = {plane_x[1], plane_x[2]};
-		split_best = {plane_x[0], plane_x[2]};
-		left_d = distance(left_best);
-		right_d = distance(right_best);
-		split_d = distance(split_best);
-	}
-	if (plane_x.size() == 2)
-		return {plane_x[0], plane_x[1]};
-	if (plane_x.size() < 2)
-		throw "Insuficientes puntos";
+	int pivot_pos = std::distance(begin, i - 1);
+	if (pivot_pos == sel)
+		return *(i - 1);
+	else if (pivot_pos > sel)
+		return rselect(list, begin, i - 1, sel);
 	else
-	{
-		std::vector<Point2D> left_x, left_y, right_x, right_y;
-		auto half_x = plane_x.begin() + (plane_x.end() - plane_x.begin()) / 2;
-		auto half_y = plane_y.begin() + (plane_y.end() - plane_y.begin()) / 2;
+		return rselect(list, i, end, sel - pivot_pos - 1);
+};
 
-		std::copy(plane_x.begin(), half_x, std::back_inserter(left_x));
-		std::copy(half_x, plane_x.end(), std::back_inserter(right_x));
-		std::copy(plane_y.begin(), half_y, std::back_inserter(left_y));
-		std::copy(half_y, plane_y.end(), std::back_inserter(right_y));
-
-		left_best = closest_pair(left_x, left_y);
-		right_best = closest_pair(right_x, right_y);
-		left_d = distance(left_best);
-		right_d = distance(right_best);
-
-		int delta = std::min(left_d, right_d);
-		split_best = closest_split_pair(plane_x, plane_y, delta);
-		split_d = distance(split_best);
-	}
-
-	if (left_d <= right_d)
-	{
-		if (left_d <= split_d)
-			return left_best;
-		else
-			return split_best;
-	}
-	else
-	{
-		if (right_d <= split_d)
-			return right_best;
-		else
-			return split_best;
-	}
-}
-
-std::pair<Point2D, Point2D> closest_pair(std::vector<Point2D> &plane)
+template <class T>
+T rselect(std::vector<T> &list, int sel)
 {
-	auto sorted_x = sort_by(plane, x);
-	auto sorted_y = sort_by(plane, y);
+	return rselect(list, list.begin(), list.end(), sel);
+};
 
-	return closest_pair(sorted_x, sorted_y);
-}
+enum graph_type
+{
+	directed,
+	undirected
+};
+
+enum input_type
+{
+	adj_list,
+	edge_list
+};
 
 class Graph
 {
+private:
+	class edge;
+	class vertex;
+	// int _searchFrom(vertex *from, int found); overload error?
+
+public:
+	graph_type m_type;
+	std::vector<edge *> E{};
+	std::map<int, vertex *> V{};
+
+	Graph(graph_type gt) : m_type{gt} {};
+
+	Graph(graph_type gt, std::string path, input_type in) : m_type(gt)
+	{
+		std::ifstream graphdata(path);
+
+		// son casi iguales lol
+		switch (in)
+		{
+		case adj_list:
+			for (std::string line; getline(graphdata, line);)
+			{
+				std::istringstream iss(line);
+				int from, to;
+				iss >> from;
+				add_vert(from);
+				while (iss >> to)
+				{
+					add_vert(to);
+					add_edge(from, to);
+				}
+			}
+			break;
+
+		case edge_list:
+			for (std::string line; getline(graphdata, line);)
+			{
+				std::istringstream iss(line);
+				int from, to;
+				iss >> from >> to;
+				add_vert(from);
+				add_vert(to);
+				add_edge(from, to);
+				std::cout << from << "\n";
+			}
+			break;
+		}
+	}
+
+	int _searchFrom(vertex *from, int found)
+	{
+		int res = found;
+		if (from->explorado == false)
+		{
+			from->explorado = true;
+			res += 1;
+		}
+		else
+			return 0;
+
+		for (auto n : from->next)
+			_searchFrom(n, 0);
+
+		return res;
+	}
+	int search(vertex *from)
+	{
+		return _searchFrom(from, 0);
+	}
+
+	std::vector<int> componentes()
+	{
+		std::vector<int> res{};
+		for (auto &v : V)
+			if (!v.second->explorado)
+				res.push_back(search(v.second));
+
+		mergesort(res);
+		return res;
+	}
+
+	vertex *operator[](const int id)
+	{
+		return V[id];
+	}
+
+	// fails silently!!
+	void add_vert(const int &val)
+	{
+		if ((*this)[val] != nullptr)
+			return;
+
+		auto new_vert = new vertex(val);
+		V[val] = new_vert;
+		return;
+	}
+
+	void add_edge(const int from, const int to)
+	{
+		auto vert_from = (*this)[from];
+		auto vert_to = (*this)[to];
+		auto new_edge = new edge(vert_from, vert_to);
+		E.push_back(new_edge);
+
+		vert_from->next.push_back(vert_to);
+		if (m_type == undirected)
+			vert_to->next.push_back(vert_from);
+		return;
+	};
+
+
+private:
+	class vertex
+	{
+	public:
+		int id;
+		std::string val{};
+		std::vector<vertex *> next{};
+		bool explorado = false;
+
+		vertex(const int &v) : id{v}, val{std::to_string(v)} {};
+		vertex(const int &v, const std::string &s) : id{v}, val{s} {};
+	};
+	class edge
+	{
+	public:
+		const vertex *from, *to;
+
+		edge(const vertex *f, const vertex *t) : from{f}, to{t} {};
+	};
+
+	void _cleanup()
+	{
+		for (auto &v : V)
+			v.second->explorado = false;
+		return;
+	}
 };
 
 int main()
 {
-	LongNat test1 = "1237";
-	LongNat test2 = "3431";
-	LongNat test3 = "960";
-	assert(test1 + test2 == "4668");
-	assert(test1 * test2 == "4244147");
-
+	// Tarea 1
 	LongNat test01 = "3141592653589793238462643383279502884197169399375105820974944592";
 	LongNat test02 = "2718281828459045235360287471352662497757247093699959574966967627";
 	assert(test01 * test02 == "8539734222673567065463550869546574495034888535765114961879601127067743044893204848617875072216249073013374895871952806582723184");
 
-	std::vector<int> test4{3, 2, 6, 4, 1, 9, 12, 11};
-	std::vector<int> result4{1, 2, 3, 4, 6, 9, 11, 12};
-	assert(mergesort(test4) == result4);
-	assert(count_inversions(test4) == 7);
-
+	// Tarea 2
 	std::vector<int> big_list{};
-
 	std::ifstream file("data/inversions.txt");
 	std::string line;
 	while (std::getline(file, line))
 		big_list.push_back(std::stoi(line));
-	assert(count_inversions(big_list) == 2407905288); // ???
-	std::vector<int> lol = mergesort(big_list);
-	for (auto i = lol.begin(); i != lol.end(); ++i)
-	{
-		if (*i <= *(i + 1))
-			continue;
-		std::cout << "FUCK";
-		break;
-	}
 
-	std::vector<Point2D> plane;
-	Point2D p;
-	int rand_x, rand_y;
-	for (int i = 0; i < 10; ++i)
-	{
-		rand_x = 1 + (rand() % 98);
-		rand_y = 1 + (rand() % 98);
-		p.x = rand_x;
-		p.y = rand_y;
-		plane.push_back(p);
-	}
+	assert(count_inversions(big_list) == 2407905288);
 
+	// Tarea 3
+	std::vector<int> big_list2{};
+	std::ifstream file2("data/quicksort.txt");
+	std::string line2;
+	while (std::getline(file2, line2))
+		big_list2.push_back(std::stoi(line2));
+
+	quicksort(big_list2);
+
+	for (auto i = big_list2.begin(); i != big_list2.end() - 2; ++i)
+		assert(*i <= *(i + 1));
+
+	// rselect
+	std::vector<int> test03{3, 8, 2, 5, 1, 4, 7, 6};
+	// assert(rselect(test03, 5) == 5);
+
+	// Tarea 4
+	auto grapht = Graph(directed, "data/SCC.txt", edge_list);
+	auto sccs = grapht.componentes();
+	for (auto &c : sccs)
+		std::cout << c << " ";
 }
