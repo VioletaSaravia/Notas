@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <numeric> // iota
 #include <map>
+#include <deque>
 
 using LongNat = std::string;
 
@@ -366,13 +367,28 @@ public:
 			for (std::string line; getline(graphdata, line);)
 			{
 				std::istringstream iss(line);
-				int from, to;
+				std::string to_separator;
+				std::string from, to, weight;
 				iss >> from;
-				add_vert(from);
-				while (iss >> to)
+				add_vert(std::stoi(from));
+				while (iss >> to_separator)
 				{
-					add_vert(to);
-					add_edge(from, to);
+					bool is_weight = false;
+					for (auto &c : to_separator)
+					{
+						if (c != ',' && !is_weight)
+						{
+							to.push_back(c);
+							continue;
+						}
+						else
+							is_weight = true;
+
+						if (c != ',')
+							weight.push_back(c);
+					}
+					add_vert(std::stoi(to));
+					add_edge(std::stoi(from), std::stoi(to));
 				}
 			}
 			break;
@@ -392,9 +408,10 @@ public:
 		}
 	}
 
-	int _searchFrom(vertex *from, int found)
+	// BFS
+	int search(vertex *from)
 	{
-		int res = found;
+		int res = 0;
 		if (from->explorado == false)
 		{
 			from->explorado = true;
@@ -404,13 +421,9 @@ public:
 			return 0;
 
 		for (auto n : from->next)
-			_searchFrom(n, 0);
+			res += search(n);
 
 		return res;
-	}
-	int search(vertex *from)
-	{
-		return _searchFrom(from, 0);
 	}
 
 	std::vector<int> componentes()
@@ -418,9 +431,13 @@ public:
 		std::vector<int> res{};
 		for (auto &v : V)
 			if (!v.second->explorado)
-				res.push_back(search(v.second));
+			{
+				int scc = search(v.second);
+				res.push_back(scc);
+				// std::cout << scc << " ";
+			};
 
-		mergesort(res);
+		res = mergesort(res);
 		return res;
 	}
 
@@ -429,7 +446,7 @@ public:
 		return V[id];
 	}
 
-	// fails silently!!
+	// falla sin msj!!!!
 	void add_vert(const int &val)
 	{
 		if ((*this)[val] != nullptr)
@@ -453,6 +470,42 @@ public:
 		return;
 	};
 
+	void add_edge(const int from, const int to, const size_t weight)
+	{
+		auto vert_from = (*this)[from];
+		auto vert_to = (*this)[to];
+		auto new_edge = new edge(vert_from, vert_to, weight);
+		E.push_back(new_edge);
+
+		vert_from->next.push_back(vert_to);
+		vert_from->weight.push_back(weight);
+		if (m_type == undirected)
+		{
+			vert_to->next.push_back(vert_from);
+			vert_to->weight.push_back(weight);
+		}
+		return;
+	};
+
+	// Dijkstra
+	std::map<int, size_t> shortest_path(const int start)
+	{
+		std::map<int, size_t> res;
+		std::vector<vertex *> queue{(*this)[start]};
+		for (auto &v : queue)
+			for (size_t i = 0; i < v->next.size(); ++i)
+			{
+				auto w = v->next[i];
+				size_t new_dist = res[v->id] + v->weight[i];
+				size_t current_dist = res[w->id];
+				if (current_dist == 0)
+					queue.push_back(w);
+				if (new_dist < current_dist || current_dist == 0)
+					res[w->id] = new_dist;
+			};
+
+		return res;
+	}
 
 private:
 	class vertex
@@ -461,6 +514,7 @@ private:
 		int id;
 		std::string val{};
 		std::vector<vertex *> next{};
+		std::vector<size_t> weight{};
 		bool explorado = false;
 
 		vertex(const int &v) : id{v}, val{std::to_string(v)} {};
@@ -470,8 +524,12 @@ private:
 	{
 	public:
 		const vertex *from, *to;
+		const size_t weight{1};
 
-		edge(const vertex *f, const vertex *t) : from{f}, to{t} {};
+		edge(const vertex *f, const vertex *t)
+			: from{f}, to{t} {};
+		edge(const vertex *f, const vertex *t, const size_t w)
+			: from{f}, to{t}, weight{w} {};
 	};
 
 	void _cleanup()
@@ -515,8 +573,12 @@ int main()
 	// assert(rselect(test03, 5) == 5);
 
 	// Tarea 4
-	auto grapht = Graph(directed, "data/SCC.txt", edge_list);
-	auto sccs = grapht.componentes();
-	for (auto &c : sccs)
-		std::cout << c << " ";
+	// auto grapht = Graph(directed, "data/SCC.txt", edge_list);
+	// auto sccs = grapht.componentes();
+	// for (auto &c : sccs)
+	// 	std::cout << c << " ";
+
+	// Tarea 5
+	auto graph5 = Graph(directed, "data/dijkstra.txt", adj_list);
+	//auto res5 = graph5.shortest_path(1);
 }
