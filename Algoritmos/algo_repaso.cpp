@@ -9,6 +9,8 @@
 #include <numeric> // iota
 #include <map>
 #include <deque>
+#include <queue> // priority_queue
+#include <concepts>
 
 using LongNat = std::string;
 
@@ -263,10 +265,7 @@ long int count_inversions(T &list)
 }
 
 template <class T>
-void quicksort(
-	T &list,
-	auto begin,
-	auto end)
+void quicksort(T &list, auto begin, auto end)
 {
 	if (begin >= end)
 		return;
@@ -367,28 +366,29 @@ public:
 			for (std::string line; getline(graphdata, line);)
 			{
 				std::istringstream iss(line);
-				std::string to_separator;
-				std::string from, to, weight;
+
+				std::string from, to, weight, to_separator;
 				iss >> from;
 				add_vert(std::stoi(from));
 				while (iss >> to_separator)
 				{
+					to = weight = "";
 					bool is_weight = false;
 					for (auto &c : to_separator)
 					{
-						if (c != ',' && !is_weight)
+						if (c == ',')
 						{
-							to.push_back(c);
+							is_weight = true;
 							continue;
 						}
+						if (!is_weight)
+							to.push_back(c);
 						else
-							is_weight = true;
-
-						if (c != ',')
 							weight.push_back(c);
 					}
 					add_vert(std::stoi(to));
-					add_edge(std::stoi(from), std::stoi(to));
+					add_edge(std::stoi(from), std::stoi(to), std::stoi(weight));
+					std::cout << from << " " << to << " " << weight << "\n";
 				}
 			}
 			break;
@@ -457,19 +457,6 @@ public:
 		return;
 	}
 
-	void add_edge(const int from, const int to)
-	{
-		auto vert_from = (*this)[from];
-		auto vert_to = (*this)[to];
-		auto new_edge = new edge(vert_from, vert_to);
-		E.push_back(new_edge);
-
-		vert_from->next.push_back(vert_to);
-		if (m_type == undirected)
-			vert_to->next.push_back(vert_from);
-		return;
-	};
-
 	void add_edge(const int from, const int to, const size_t weight)
 	{
 		auto vert_from = (*this)[from];
@@ -487,27 +474,52 @@ public:
 		return;
 	};
 
+	void add_edge(const int from, const int to)
+	{
+		add_edge(from, to, 1);
+		return;
+	};
+
 	// Dijkstra
+	std::map<int, size_t> shortest_path(size_t &next, auto &vert_queue, auto &res)
+	{
+		size_t initial_q = vert_queue.size();
+		auto v = vert_queue[next];
+		for (size_t i = 0; i < v->next.size(); ++i)
+		{
+			auto w = v->next[i];
+			std::cout << w->id << " ";
+			size_t new_dist = res[v->id] + v->weight[i];
+			size_t current_dist = res[w->id];
+			if (current_dist == 0 && w != vert_queue[0])
+				vert_queue.push_back(w);
+			if (new_dist < current_dist || (current_dist == 0 && w != vert_queue[0]))
+				res[w->id] = new_dist;
+		};
+		std::cout << "\n";
+		if (initial_q == vert_queue.size()) // no
+											// if (v == *(vert_queue.end() - 1))
+			return res;
+		++next;
+		return shortest_path(next, vert_queue, res);
+	}
+
 	std::map<int, size_t> shortest_path(const int start)
 	{
-		std::map<int, size_t> res;
-		std::vector<vertex *> queue{(*this)[start]};
-		for (auto &v : queue)
-			for (size_t i = 0; i < v->next.size(); ++i)
-			{
-				auto w = v->next[i];
-				size_t new_dist = res[v->id] + v->weight[i];
-				size_t current_dist = res[w->id];
-				if (current_dist == 0)
-					queue.push_back(w);
-				if (new_dist < current_dist || current_dist == 0)
-					res[w->id] = new_dist;
-			};
-
-		return res;
+		std::map<int, size_t> res; //{{start, 0}}; se crea solo en el primer uso
+		std::vector<vertex *> vert_queue{(*this)[start]};
+		size_t next = 0;
+		return shortest_path(next, vert_queue, res);
 	}
 
 private:
+	void _cleanup()
+	{
+		for (auto &v : V)
+			v.second->explorado = false;
+		return;
+	}
+
 	class vertex
 	{
 	public:
@@ -520,6 +532,7 @@ private:
 		vertex(const int &v) : id{v}, val{std::to_string(v)} {};
 		vertex(const int &v, const std::string &s) : id{v}, val{s} {};
 	};
+
 	class edge
 	{
 	public:
@@ -531,25 +544,71 @@ private:
 		edge(const vertex *f, const vertex *t, const size_t w)
 			: from{f}, to{t}, weight{w} {};
 	};
-
-	void _cleanup()
-	{
-		for (auto &v : V)
-			v.second->explorado = false;
-		return;
-	}
 };
+
+// template <Sized T>
+// T requiere <, >
+// Nótese que std::greater<> era la clave para implementar
+// minheap y maxheap con un sólo template
+template <class T>
+std::vector<T> MedianList(std::vector<T> &in)
+{
+	std::vector<T> out{};
+	std::priority_queue<T, std::vector<T>> H1{};
+	std::priority_queue<T, std::vector<T>, std::greater<T>> H2{};
+
+	for (auto &i : in)
+	{
+		if (H1.empty())
+			H1.push(i);
+		else if (i <= H1.top())
+			H1.push(i);
+		else
+			H2.push(i);
+
+		// rebalance
+		if (H1.size() - H2.size() == 2)
+		{
+			H2.push(H1.top());
+			H1.pop();
+		}
+		if (H2.size() - H1.size() == 2)
+		{
+			H1.push(H2.top());
+			H2.pop();
+		}
+		// no hay que promedias h1.top y h2.top en iteracion par?
+		out.push_back(H1.top());
+	}
+
+	return out;
+}
+
+template <class T>
+// sizeof() template requirement???
+T two_sum(std::vector<T> &input)
+{
+	T result;
+	std::unordered_map<T, T> sum_map;
+
+	return T;
+}
 
 int main()
 {
 	// Tarea 1
-	LongNat test01 = "3141592653589793238462643383279502884197169399375105820974944592";
-	LongNat test02 = "2718281828459045235360287471352662497757247093699959574966967627";
-	assert(test01 * test02 == "8539734222673567065463550869546574495034888535765114961879601127067743044893204848617875072216249073013374895871952806582723184");
+	std::ifstream tarea1("data/karatsuba.txt");
+
+	LongNat test01, test02, mult;
+	std::getline(tarea1, test01);
+	std::getline(tarea1, test02);
+	std::getline(tarea1, mult);
+	assert(test01 * test02 == mult);
 
 	// Tarea 2
 	std::vector<int> big_list{};
 	std::ifstream file("data/inversions.txt");
+
 	std::string line;
 	while (std::getline(file, line))
 		big_list.push_back(std::stoi(line));
@@ -568,10 +627,6 @@ int main()
 	for (auto i = big_list2.begin(); i != big_list2.end() - 2; ++i)
 		assert(*i <= *(i + 1));
 
-	// rselect
-	std::vector<int> test03{3, 8, 2, 5, 1, 4, 7, 6};
-	// assert(rselect(test03, 5) == 5);
-
 	// Tarea 4
 	// auto grapht = Graph(directed, "data/SCC.txt", edge_list);
 	// auto sccs = grapht.componentes();
@@ -580,5 +635,26 @@ int main()
 
 	// Tarea 5
 	auto graph5 = Graph(directed, "data/dijkstra.txt", adj_list);
-	//auto res5 = graph5.shortest_path(1);
+	auto test5 = graph5.shortest_path(1);
+
+	// Tarea 6
+	std::vector<int> to_median;
+	std::ifstream file3("data/median.txt");
+	std::string line3;
+	while (std::getline(file3, line3))
+		to_median.push_back(std::stoi(line3));
+
+	auto result6 = MedianList(to_median);
+
+	// Tarea 7
+	std::vector<long long int> input_list;
+	// std::unordered_map<long long int, long long int> result7;
+	std::ifstream file4("data/2sum.txt");
+	std::string line4;
+	while (std::getline(file4, line4))
+		input_list.push_back(std::stoi(line4));
+
+	int result7 = two_sum(input_list);
+
+	std::cout << "BYE FEA";
 }
