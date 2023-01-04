@@ -341,17 +341,73 @@ enum input_type
 	edge_list
 };
 
+enum mst_algo
+{
+	prim,
+	kruskal
+};
+
+class vertex
+{
+public:
+	int id;
+	size_t w = 0;
+	std::string val{""};
+	std::vector<vertex *> next{};
+	std::vector<size_t> weight{}; // :S
+	bool explorado = false;
+
+	vertex(const int &v) : id{v} {};
+	vertex(const int &v, const size_t &s) : id{v}, w{s} {};
+	vertex(const int &v, const std::string &s) : id{v}, val{s} {};
+};
+
+class edge
+{
+public:
+	const vertex *from, *to;
+	const size_t weight{1};
+
+	edge(const vertex *f, const vertex *t)
+		: from{f}, to{t} {};
+	edge(const vertex *f, const vertex *t, const size_t w)
+		: from{f}, to{t}, weight{w} {};
+
+	// https://www.youtube.com/watch?v=ImLFlLjSveM
+	// 45:20
+	bool operator<(const edge &rhs)
+	{
+		return this->weight < rhs.weight;
+	}
+	bool operator>(const edge &rhs)
+	{
+		return this->weight > rhs.weight;
+	}
+	bool operator<=(const edge &rhs)
+	{
+		return this->weight <= rhs.weight;
+	}
+	bool operator>=(const edge &rhs)
+	{
+		return this->weight >= rhs.weight;
+	}
+	bool operator==(const edge &rhs)
+	{
+		return this->weight == rhs.weight;
+	}
+};
+
 class Graph
 {
 private:
-	class edge;
-	class vertex;
+	// class edge;
+	// class vertex;
 	// int _searchFrom(vertex *from, int found); overload error?
 
 public:
 	graph_type m_type;
-	std::vector<edge *> E{};
-	std::map<int, vertex *> V{};
+	std::vector<edge *> E{};	 // debieran ser privadas
+	std::map<int, vertex *> V{}; // same
 
 	Graph(graph_type gt) : m_type{gt} {};
 
@@ -387,7 +443,7 @@ public:
 							weight.push_back(c);
 					}
 					add_vert(std::stoi(to));
-					add_edge(std::stoi(from), std::stoi(to), std::stoi(weight));
+					add_edge(std::stoi(from), std::stoi(to), size_t(std::stoi(weight)));
 					std::cout << from << " " << to << " " << weight << "\n";
 				}
 			}
@@ -398,11 +454,15 @@ public:
 			{
 				std::istringstream iss(line);
 				int from, to;
+				size_t weight;
 				iss >> from >> to;
 				add_vert(from);
 				add_vert(to);
-				add_edge(from, to);
-				std::cout << from << "\n";
+				if (iss >> weight)
+					add_edge(from, to, weight);
+				else
+					add_edge(from, to);
+				// std::cout << from << "\n";
 			}
 			break;
 		}
@@ -411,6 +471,7 @@ public:
 	// BFS
 	int search(vertex *from)
 	{
+		_cleanup();
 		int res = 0;
 		if (from->explorado == false)
 		{
@@ -512,6 +573,81 @@ public:
 		return shortest_path(next, vert_queue, res);
 	}
 
+	// Kruskal
+	Graph mst()
+	{
+		auto out = Graph(directed);
+		quicksort(E);
+
+		for (auto &e : E)
+		{
+			auto edge_from = out.V[e->from->id];
+			auto edge_to = out.V[e->to->id];
+			if (edge_from != nullptr && edge_to != nullptr)
+			{
+				// O(m*n)
+				out.search(edge_from);
+				if (edge_to->explorado)
+					continue;
+			}
+
+			out.add_vert(e->from->id);
+			out.add_vert(e->to->id);
+			out.add_edge(e->from->id, e->to->id);
+
+			if (out.V.size() == this->V.size())
+				return out;
+		}
+
+		return out;
+	}
+
+	// Major Weight Independent Set
+	std::vector<vertex *> mwis(std::vector<vertex *> &subset,
+							   std::vector<int> &cache)
+	{
+		if (subset.size() < 2)
+			return subset;
+
+		if (cache[subset.size() - 1] != 0)
+			sol_1 = cache[subset.size() - 1];
+
+		// S_1
+		auto sub_1 = subset;
+		sub_1.pop_back();
+		auto sol_1 = mwis(sub_1, cache);
+
+		// S_2
+		auto sub_2 = subset;
+		auto last_v = *(sub_2.end() - 1);
+		sub_2.pop_back();
+		sub_2.pop_back();
+		auto sol_2 = mwis(sub_2, cache);
+		sol_2.push_back(last_v);
+
+		int sol_1_w = 0;
+		int sol_2_w = 0;
+		for (auto &v : sol_1)
+			sol_1_w += v->w;
+
+		for (auto &v : sol_2)
+			sol_2_w += v->w;
+
+		return sol_1_w > sol_2_w ? sol_1 : sol_2;
+	}
+
+	std::vector<vertex *> mwis()
+	{
+		std::vector<vertex *> verts;
+		for (auto &v : this->V)
+			verts.push_back(v.second);
+
+		std::vector<int> cache;
+		cache.resize(verts.size() + 1);
+
+		return mwis(verts, cache);
+	}
+
 private:
 	void _cleanup()
 	{
@@ -519,30 +655,56 @@ private:
 			v.second->explorado = false;
 		return;
 	}
+};
 
-	class vertex
+// template <class T>
+class UnionFind
+{
+private:
+	Graph m_set = *(new Graph(directed)); // :S
+	std::map<int, size_t> m_size{};
+
+public:
+	UnionFind(const std::vector<vertex *> &input)
 	{
-	public:
-		int id;
-		std::string val{};
-		std::vector<vertex *> next{};
-		std::vector<size_t> weight{};
-		bool explorado = false;
-
-		vertex(const int &v) : id{v}, val{std::to_string(v)} {};
-		vertex(const int &v, const std::string &s) : id{v}, val{s} {};
+		for (auto &t : input)
+		{
+			m_set.add_vert(t->id);
+			m_set.add_edge(t->id, t->id);
+			m_size[t->id] = size_t(1);
+		}
 	};
-
-	class edge
+	int find(const int &input)
 	{
-	public:
-		const vertex *from, *to;
-		const size_t weight{1};
+		vertex *points_to = m_set[input]->next[0];
+		if (points_to->id == input)
+			return input;
 
-		edge(const vertex *f, const vertex *t)
-			: from{f}, to{t} {};
-		edge(const vertex *f, const vertex *t, const size_t w)
-			: from{f}, to{t}, weight{w} {};
+		return find(points_to->id);
+	};
+	void new_union(const int &lhs, const int &rhs)
+	{
+		int parent_left = find(lhs);
+		int parent_right = find(rhs);
+
+		if (m_size[parent_left] < m_size[parent_right])
+		{
+			m_set[parent_left]->next.clear(); // arruina lista de edges
+			m_set[parent_left]->weight.clear();
+			m_set.add_edge(lhs, rhs);
+
+			m_size[parent_right] += m_size[parent_left];
+			m_size[parent_left] = size_t(0);
+		}
+		else
+		{
+			m_set[parent_right]->next.clear(); // arruina lista de edges
+			m_set[parent_right]->weight.clear();
+			m_set.add_edge(rhs, lhs);
+
+			m_size[parent_left] += m_size[parent_right];
+			m_size[parent_right] = size_t(0);
+		}
 	};
 };
 
@@ -577,7 +739,7 @@ std::vector<T> MedianList(std::vector<T> &in)
 			H1.push(H2.top());
 			H2.pop();
 		}
-		// no hay que promedias h1.top y h2.top en iteracion par?
+		// no hay que promediar h1.top y h2.top en iteracion par?
 		out.push_back(H1.top());
 	}
 
@@ -585,18 +747,48 @@ std::vector<T> MedianList(std::vector<T> &in)
 }
 
 template <class T>
-// sizeof() template requirement???
-T two_sum(std::vector<T> &input)
+std::pair<T, T> two_sum(std::vector<T> &input, T target)
 {
-	T result;
-	std::unordered_map<T, T> sum_map;
+	std::unordered_map<T, bool> sum_map;
 
-	return T;
+	for (auto &i : input)
+		if (sum_map[target - i] == true)
+			return std::make_pair(target - i, i);
+		else
+			sum_map[i] = true;
+
+	throw "No pair adds up to target";
+}
+
+using job = std::pair<long double, long double>;
+bool operator<(const job &lhs, const job &rhs)
+{
+	return (lhs.first / lhs.second) < (rhs.first / rhs.second);
+}
+
+bool operator>(const job &lhs, const job &rhs)
+{
+	return (lhs.first / lhs.second) > (rhs.first / rhs.second);
+}
+
+bool operator<=(const job &lhs, const job &rhs)
+{
+	return (lhs.first / lhs.second) <= (rhs.first / rhs.second);
+}
+
+bool operator>=(const job &lhs, const job &rhs)
+{
+	return (lhs.first / lhs.second) >= (rhs.first / rhs.second);
+}
+
+bool operator==(const job &lhs, const job &rhs)
+{
+	return (lhs.first / lhs.second) == (rhs.first / rhs.second);
 }
 
 int main()
 {
-	// Tarea 1
+	// Tarea 1 - Karatsuba
 	std::ifstream tarea1("data/karatsuba.txt");
 
 	LongNat test01, test02, mult;
@@ -605,7 +797,7 @@ int main()
 	std::getline(tarea1, mult);
 	assert(test01 * test02 == mult);
 
-	// Tarea 2
+	// Tarea 2 - Count Inversions
 	std::vector<int> big_list{};
 	std::ifstream file("data/inversions.txt");
 
@@ -615,7 +807,7 @@ int main()
 
 	assert(count_inversions(big_list) == 2407905288);
 
-	// Tarea 3
+	// Tarea 3 - QuickSort
 	std::vector<int> big_list2{};
 	std::ifstream file2("data/quicksort.txt");
 	std::string line2;
@@ -627,17 +819,17 @@ int main()
 	for (auto i = big_list2.begin(); i != big_list2.end() - 2; ++i)
 		assert(*i <= *(i + 1));
 
-	// Tarea 4
+	// Tarea 4 - Graphs, Strongly-connected Components
 	// auto grapht = Graph(directed, "data/SCC.txt", edge_list);
 	// auto sccs = grapht.componentes();
 	// for (auto &c : sccs)
 	// 	std::cout << c << " ";
 
-	// Tarea 5
+	// Tarea 5 - Graphs, Dijkstra
 	auto graph5 = Graph(directed, "data/dijkstra.txt", adj_list);
 	auto test5 = graph5.shortest_path(1);
 
-	// Tarea 6
+	// Tarea 6 - Median Maintenance, Heaps
 	std::vector<int> to_median;
 	std::ifstream file3("data/median.txt");
 	std::string line3;
@@ -645,16 +837,44 @@ int main()
 		to_median.push_back(std::stoi(line3));
 
 	auto result6 = MedianList(to_median);
-
-	// Tarea 7
-	std::vector<long long int> input_list;
-	// std::unordered_map<long long int, long long int> result7;
+	// Tarea 7 - Two-Sum Algorithm
+	std::vector<long long> input_list;
 	std::ifstream file4("data/2sum.txt");
 	std::string line4;
 	while (std::getline(file4, line4))
-		input_list.push_back(std::stoi(line4));
+		input_list.push_back(std::stoll(line4));
 
-	int result7 = two_sum(input_list);
+	long long target_test = 124'657'388'181;
+	std::pair<long long, long long> result_test = std::make_pair(68'037'543'430, 56'619'844'751);
+	assert(two_sum(input_list, target_test) == result_test);
 
-	std::cout << "BYE FEA";
+	// Tarea 8 - Queues
+	// int jobs_count;
+	std::vector<job> jobs;
+	std::ifstream file5("data/jobs.txt");
+	std::string line5;
+	std::getline(file5, line5);
+	while (std::getline(file5, line5))
+	{
+		std::istringstream iss(line5);
+		std::string weight, length;
+		iss >> weight;
+		iss >> length;
+		jobs.push_back(std::make_pair(
+			std::stold(weight), std::stold(length)));
+	};
+
+	// jobs = mergesort(jobs);
+	// std::sort(jobs.begin(), jobs.end());
+	quicksort(jobs);
+
+	// Tarea 9 - Minimum Spanning Trees
+	auto data9 = Graph(directed, "data/clustering1.txt", edge_list);
+	auto result9 = data9.mst();
+
+	// Tarea 10 - Dynamic Programming 1, Weighted Independent Set
+	auto data10 = Graph(directed);
+	std::vector<vertex *> result10 = data10.mwis();
+
+	std::cout << "CHAU\n";
 }
