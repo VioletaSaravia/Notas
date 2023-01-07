@@ -56,7 +56,7 @@ figure get_shape(shape s)
 	}
 }
 
-enum direction
+enum rotate_dir
 {
 	left,
 	right
@@ -209,7 +209,7 @@ private:
 										 _position{start} {};
 		~Piece();
 
-		void rotate(direction d);
+		void rotate(rotate_dir d);
 
 		void move(int x_add, int y_add)
 		{

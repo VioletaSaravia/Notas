@@ -11,6 +11,7 @@
 #include <deque>
 #include <queue> // priority_queue
 #include <concepts>
+#include <ranges>
 
 using LongNat = std::string;
 
@@ -542,7 +543,10 @@ public:
 	};
 
 	// Dijkstra
-	std::map<int, size_t> shortest_path(size_t &next, auto &vert_queue, auto &res)
+	std::map<int, size_t> shortest_path(
+		size_t &next,
+		auto &vert_queue,
+		auto &res)
 	{
 		size_t initial_q = vert_queue.size();
 		auto v = vert_queue[next];
@@ -567,7 +571,7 @@ public:
 
 	std::map<int, size_t> shortest_path(const int start)
 	{
-		std::map<int, size_t> res; //{{start, 0}}; se crea solo en el primer uso
+		std::map<int, size_t> res;
 		std::vector<vertex *> vert_queue{(*this)[start]};
 		size_t next = 0;
 		return shortest_path(next, vert_queue, res);
@@ -603,47 +607,54 @@ public:
 	}
 
 	// Major Weight Independent Set
-	std::vector<vertex *> mwis(std::vector<vertex *> &subset,
-							   std::vector<int> &cache)
+	size_t mwis(std::vector<vertex *> &subset,
+				std::vector<size_t> &cache)
 	{
-		if (subset.size() < 2)
-			return subset;
+		switch (subset.size())
+		{
+		case 1:
+			cache[1] = subset.front()->w;
+			return cache[1];
+		case 0:
+			return 0;
+		default:
+			break;
+		}
 
-		if (cache[subset.size() - 1] != 0)
-			sol_1 = cache[subset.size() - 1];
-
-		// S_1
 		auto sub_1 = subset;
 		sub_1.pop_back();
-		auto sol_1 = mwis(sub_1, cache);
-
-		// S_2
 		auto sub_2 = subset;
-		auto last_v = *(sub_2.end() - 1);
+		// for ([[maybe_unused]] auto i : rv::iota(0,2))
+		// sub_2.pop_back();
 		sub_2.pop_back();
 		sub_2.pop_back();
-		auto sol_2 = mwis(sub_2, cache);
-		sol_2.push_back(last_v);
 
-		int sol_1_w = 0;
-		int sol_2_w = 0;
-		for (auto &v : sol_1)
-			sol_1_w += v->w;
+		size_t sol_1 = cache[sub_1.size()] != 0
+						   ? cache[sub_1.size()]
+						   : mwis(sub_1, cache);
 
-		for (auto &v : sol_2)
-			sol_2_w += v->w;
+		size_t sol_2 = cache[sub_2.size()] != 0
+						   ? cache[sub_2.size()]
+						   : mwis(sub_2, cache) + subset.back()->w;
 
-		return sol_1_w > sol_2_w ? sol_1 : sol_2;
+		return sol_1 > sol_2 ? mwis(sub_1, cache) : mwis(sub_2, cache);
 	}
 
-	std::vector<vertex *> mwis()
+	// std::vector<vertex *> _rebuild_mwis(int weight)
+	// {
+	// }
+
+	size_t mwis()
 	{
 		std::vector<vertex *> verts;
 		for (auto &v : this->V)
 			verts.push_back(v.second);
 
-		std::vector<int> cache;
-		cache.resize(verts.size() + 1);
+		// map no sirve?
+		// std::copy(V.begin(), V.end(), std::back_inserter(verts));
+
+		std::vector<size_t> cache(verts.size() + 1);
+		// cache.resize(verts.size() + 1);
 
 		return mwis(verts, cache);
 	}
@@ -786,6 +797,78 @@ bool operator==(const job &lhs, const job &rhs)
 	return (lhs.first / lhs.second) == (rhs.first / rhs.second);
 }
 
+// using item = std::pair<int, int>;
+struct item
+{
+	size_t value, size;
+};
+
+std::pair<size_t, std::vector<item>> bag_optimally(std::vector<item> &to_bag, const size_t bag_size)
+{
+	std::vector<std::vector<size_t>> subSolutions(to_bag.size() + 1);
+	for (auto &v : subSolutions)
+		v.resize(bag_size + 1);
+
+	for (auto &c : subSolutions[0])
+		c = 0;
+
+	for (size_t i = 1; i <= to_bag.size(); ++i)
+		for (size_t c = 0; c <= bag_size; ++c) // views::iota() no anda??
+			if (to_bag[i].size > c)
+				subSolutions[i][c] = subSolutions[i - 1][c];
+			else
+				subSolutions[i][c] = std::max(
+					subSolutions[i - 1][c],
+					subSolutions[i - 1][c - to_bag[i].size] + to_bag[i].value);
+
+	size_t best_size = subSolutions.back().back();
+
+	// Reconstruct step
+	std::vector<item> best_bag{};
+	size_t capacity_left = bag_size;
+	for (size_t i = to_bag.size(); i >= 1; --i)
+		if (to_bag[i].size <= capacity_left &&
+			subSolutions[i - 1][capacity_left - to_bag[i].size] + to_bag[i].value >=
+				subSolutions[i - 1][capacity_left])
+		{
+			best_bag.push_back(to_bag[i]);
+			capacity_left -= to_bag[i].size;
+		}
+	return std::make_pair(best_size, best_bag);
+}
+
+template <class T>
+std::pair<T, T> align(T seq1, T seq2)
+{
+}
+
+template <class T>
+int sum_penalties(std::pair<T, T> aligned_seqs)
+{
+	// Needleman-Wunsch
+	int gap_penalty;
+	int mismatch_penalty;
+
+	int sum = 0;
+	// map func??
+	for (auto &i : rv::zip(aligned_seqs.first, aligned_seqs.second))
+		if (i.first == "-" ^ i.second == "-")
+			sum += gap_penalty;
+		else if (i.first != i.second)
+			sum += mismatch_penalty;
+
+	return sum;
+
+	// return accumulate(map(zip(seq1, seq2), [gap_p, mis_p](pair x, y)
+	// {gap_p if "-", mis_p if !=}))
+}
+
+template <class T>
+int calculate_similarity(T sequence1, T sequence2)
+{
+	return sum_penalties(align(sequence1, sequence2));
+}
+
 int main()
 {
 	// Tarea 1 - Karatsuba
@@ -837,6 +920,7 @@ int main()
 		to_median.push_back(std::stoi(line3));
 
 	auto result6 = MedianList(to_median);
+
 	// Tarea 7 - Two-Sum Algorithm
 	std::vector<long long> input_list;
 	std::ifstream file4("data/2sum.txt");
@@ -845,7 +929,9 @@ int main()
 		input_list.push_back(std::stoll(line4));
 
 	long long target_test = 124'657'388'181;
-	std::pair<long long, long long> result_test = std::make_pair(68'037'543'430, 56'619'844'751);
+	std::pair<long long, long long> result_test = std::make_pair(
+		68'037'543'430,
+		56'619'844'751);
 	assert(two_sum(input_list, target_test) == result_test);
 
 	// Tarea 8 - Queues
@@ -864,8 +950,6 @@ int main()
 			std::stold(weight), std::stold(length)));
 	};
 
-	// jobs = mergesort(jobs);
-	// std::sort(jobs.begin(), jobs.end());
 	quicksort(jobs);
 
 	// Tarea 9 - Minimum Spanning Trees
@@ -873,8 +957,34 @@ int main()
 	auto result9 = data9.mst();
 
 	// Tarea 10 - Dynamic Programming 1, Weighted Independent Set
-	auto data10 = Graph(directed);
-	std::vector<vertex *> result10 = data10.mwis();
+	// auto data10 = Graph(directed);
+	// size_t result10 = data10.mwis();
+	// assert(result10 != size_t(0));
+
+	// Tarea 11 - DP 2, Knapsack Problem
+	std::ifstream file6("data/knapsack1.txt");
+	std::vector<item> items_to_bag{};
+	std::string line6;
+	std::getline(file6, line6);
+	std::istringstream iss(line6);
+	size_t bag_size;
+	iss >> bag_size;
+	while (std::getline(file6, line6))
+	{
+		std::istringstream iss(line6);
+		size_t weight, value;
+		iss >> value;
+		iss >> weight;
+		items_to_bag.push_back(item{value, weight});
+	};
+
+	auto result11 = bag_optimally(items_to_bag, bag_size);
+	assert(result11.first != size_t(0));
+
+	// DP3 - Alineamiento de genomas
+	std::string seq1 = "ATCCG";
+	std::string seq2 = "CTCG";
+	calculate_similarity(seq1, seq2);
 
 	std::cout << "CHAU\n";
 }
